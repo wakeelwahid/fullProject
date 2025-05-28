@@ -116,9 +116,26 @@ const ProfilePage = () => {
           <div className="referral-code">
             <div>
               <div className="code-label">Your Referral Code:</div>
-              <div className="code-text">RAHULKING</div>
+              <div className="code-text">{user.referral_code || "Loading..."}</div>
             </div>
-            <button className="copy-btn">
+            <button 
+              className="copy-btn"
+              onClick={() => {
+                const code = user.referral_code || "";
+                navigator.clipboard.writeText(code).then(() => {
+                  alert("Referral code copied!");
+                }).catch(() => {
+                  // Fallback for older browsers
+                  const textArea = document.createElement("textarea");
+                  textArea.value = code;
+                  document.body.appendChild(textArea);
+                  textArea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textArea);
+                  alert("Referral code copied!");
+                });
+              }}
+            >
               <i className="fas fa-copy"></i> COPY CODE
             </button>
           </div>
