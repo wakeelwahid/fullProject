@@ -2,7 +2,7 @@
 import "./MyProfile.css";
 import { Link, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import axios from "../../api/axiosSetup";
+import axios from "../../../api/axiosSetup";
 
 const ProfilePage = () => {
   const navigate = useNavigate(); // navigation ke liye
