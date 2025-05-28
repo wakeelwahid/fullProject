@@ -1,0 +1,216 @@
+/* RefundPolicy.css - Satta King Theme */
+
+:root {
+  --gold: #FFD700;
+  --dark-gold: #D4AF37;
+  --red: #FF0000;
+  --dark-red: #8B0000;
+  --green: #009900;
+  --black: #000000;
+  --dark-bg: #121212;
+}
+
+.refund-container {
+  font-family: 'Arial', sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: white;
+  line-height: 1.6;
+  background-color: var(--dark-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Floating Coins Animation */
+@keyframes floatCoin {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+}
+
+.floating-coin {
+  position: fixed;
+  width: 30px;
+  height: 30px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FFD700"><circle cx="12" cy="12" r="10"/><text x="12" y="16" font-size="10" text-anchor="middle" fill="%23000">₹</text></svg>');
+  background-size: contain;
+  animation: floatCoin 8s linear infinite;
+  z-index: -1;
+}
+
+/* Gold Text Glow */
+@keyframes goldGlow {
+  0% { text-shadow: 0 0 5px var(--gold); }
+  50% { text-shadow: 0 0 20px var(--gold); }
+  100% { text-shadow: 0 0 5px var(--gold); }
+}
+
+.refund-header {
+  text-align: center;
+  padding: 40px 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(139,0,0,0.5));
+  border-bottom: 3px solid var(--gold);
+  border-radius: 10px;
+  margin-bottom: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+.refund-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text x="10" y="50" font-family="Arial" font-size="20" fill="rgba(255,215,0,0.05)">₹</text></svg>');
+  opacity: 0.3;
+  z-index: -1;
+}
+
+.refund-title {
+  font-size: 2.8rem;
+  margin: 0;
+  color: var(--gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+  letter-spacing: 2px;
+  animation: goldGlow 3s infinite;
+}
+
+.last-updated {
+  color: var(--gold);
+  font-style: italic;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.refund-section {
+  margin-bottom: 40px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 30px;
+  border-radius: 10px;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.refund-section::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 215, 0, 0) 0%,
+    rgba(255, 215, 0, 0.1) 50%,
+    rgba(255, 215, 0, 0) 100%
+  );
+  transform: rotate(30deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: rotate(30deg) translate(-30%, -30%); }
+  100% { transform: rotate(30deg) translate(30%, 30%); }
+}
+
+.section-title {
+  color: var(--gold);
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.5);
+}
+
+.section-content {
+  margin-bottom: 20px;
+}
+
+.sub-section {
+  margin-bottom: 25px;
+}
+
+.sub-title {
+  font-size: 1.4rem;
+  color: var(--gold);
+  margin-bottom: 15px;
+}
+
+ul.refund-list {
+  padding-left: 20px;
+  list-style-type: none;
+}
+
+ul.refund-list li {
+  margin-bottom: 12px;
+  position: relative;
+  padding-left: 25px;
+}
+
+ul.refund-list li::before {
+  content: "•";
+  color: var(--gold);
+  font-size: 1.5rem;
+  position: absolute;
+  left: 0;
+  top: -5px;
+}
+
+.highlight-box {
+  background: rgba(212, 175, 55, 0.1);
+  border-left: 4px solid var(--gold);
+  padding: 20px;
+  margin: 25px 0;
+  border-radius: 0 5px 5px 0;
+}
+
+.contact-info {
+  background: rgba(139, 0, 0, 0.2);
+  padding: 25px;
+  border-radius: 10px;
+  border: 1px solid var(--red);
+}
+
+/* Button Styles */
+.refund-btn {
+  background: linear-gradient(to right, var(--gold), var(--dark-gold));
+  color: black;
+  border: none;
+  padding: 12px 30px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.3);
+  display: inline-block;
+  margin-top: 15px;
+  text-decoration: none;
+}
+
+.refund-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.5);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .refund-container {
+    padding: 15px;
+  }
+  
+  .refund-title {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .refund-section {
+    padding: 20px;
+  }
+}

@@ -1,0 +1,211 @@
+
+
+.my-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.bet-header {
+  background: linear-gradient(90deg, #1a1a1a 0%, #000 100%);
+  padding: 15px 0;
+  
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  margin-bottom: 30px;
+}
+
+.bet-logo {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--gold);
+  text-shadow: 0 0 10px var(--gold);
+  letter-spacing: 2px;
+  border-bottom: 2px solid var(--gold);
+  /* border-top: 2px solid var(--gold); */
+
+  padding: 15px 0;
+  
+
+}
+
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--gold);
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.7);
+}
+
+.bet-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+}
+
+.bet-card {
+  background: rgba(26, 26, 26, 0.8);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #333;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.bet-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.bet-id {
+  font-weight: bold;
+  color: var(--gold);
+}
+
+.bet-date {
+  color: #aaa;
+}
+
+.bet-market {
+  background: violet;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: inline-block;
+  margin-bottom: 15px;
+  font-weight: bold;
+  color: rgb(25, 22, 25);
+}
+
+.bet-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+ justify-content: center;
+}
+
+.bet-number-chip {
+  
+ 
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  background-color: rgb(165, 92, 211);
+
+}
+
+.bet-number-chip.andar {
+ 
+  background-color: rgba(0, 100, 0, 0.5);
+  border-left: 3px solid lime;
+
+}
+
+.bet-number-chip.bahar {
+  background-color: rgba(139, 0, 0, 0.5);
+  border-left: 3px solid red;
+}
+
+.bet-number-chip .bet-section-mark {
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+.bet-number-chip.andar .bet-section-mark {
+  color: var(--green);
+}
+
+.bet-number-chip.bahar .bet-section-mark {
+  color: var(--red);
+}
+
+.bet-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #333;
+}
+
+.bet-status {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.bet-status-pending {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+}
+
+.bet-status-won {
+  background: rgba(0, 255, 0, 0.2);
+  color: var(--green);
+}
+
+.bet-status-lost {
+  background: rgba(255, 0, 0, 0.2);
+  color: var(--red);
+}
+
+.bet-amount {
+  font-weight: bold;
+  color: var(--gold);
+}
+
+.bet-payout {
+  color: var(--green);
+  font-weight: bold;
+}
+
+.bet-no-bets {
+  text-align: center;
+  padding: 40px;
+  color: #777;
+  font-size: 1.2rem;
+}
+
+.bet-back-btn {
+  display: inline-block;
+  margin-top: 30px;
+  padding: 10px 20px;
+  background: var(--gold);
+  color: black;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.bet-back-btn:hover {
+  background: var(--gold-dark);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+}
+
+@media (max-width: 768px) {
+  .bet-header {
+      flex-direction: column;
+      gap: 10px;
+  }
+
+  .bet-bet-footer {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+  }
+
+  .bet-container {
+      padding: 15px;
+  }
+}
+
+

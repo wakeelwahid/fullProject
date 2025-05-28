@@ -1,0 +1,256 @@
+
+.withdraw-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* Header Styles */
+.withdraw-header {
+  text-align: center;
+  padding: 30px 0 20px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.withdraw-title {
+  font-size: 2.2rem;
+  margin: 0;
+  color: var(--gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+  letter-spacing: 2px;
+}
+
+.gold-line {
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 10px auto;
+  width: 80%;
+}
+
+/* Withdraw Card */
+.withdraw-card {
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.withdraw-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 215, 0, 0) 0%,
+    rgba(255, 215, 0, 0.1) 50%,
+    rgba(255, 215, 0, 0) 100%
+  );
+  transform: rotate(30deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: rotate(30deg) translate(-30%, -30%); }
+  100% { transform: rotate(30deg) translate(30%, 30%); }
+}
+
+.card-title {
+  color: var(--gold);
+  font-size: 1.5rem;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 15px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--gold);
+  border-radius: 5px;
+  color: white;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.amount-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.amount-btn {
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: bold;
+}
+
+.amount-btn:hover, .amount-btn.active {
+  background: var(--gold);
+  color: black;
+}
+
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.method-option {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--gold);
+  border-radius: 5px;
+  padding: 15px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.method-option:hover, .method-option.selected {
+  background: rgba(212, 175, 55, 0.3);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.method-icon {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.submit-btn {
+  background: linear-gradient(to right, var(--gold), var(--dark-gold));
+  color: black;
+  border: none;
+  padding: 12px 30px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: block;
+  width: 100%;
+  margin-top: 30px;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+.submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.5);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.withdrawal-info {
+  background: rgba(0, 0, 0, 0.5);
+  border-left: 3px solid var(--gold);
+  padding: 15px;
+  border-radius: 0 5px 5px 0;
+}
+
+.withdrawal-info h3 {
+  margin-top: 0;
+  color: var(--gold);
+}
+
+.withdrawal-info ul {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.withdrawal-info li {
+  margin-bottom: 8px;
+}
+
+/* Success Message */
+.success-message {
+  text-align: center;
+  padding: 20px;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.success-icon {
+  font-size: 3rem;
+  color: var(--green);
+  margin-bottom: 15px;
+  animation: bounce 1s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-20px); }
+  60% { transform: translateY(-10px); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .withdraw-container {
+    padding: 15px;
+  }
+  
+  .withdraw-title {
+    font-size: 2rem;
+  }
+  
+  .method-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .withdraw-title {
+    font-size: 1.7rem;
+  }
+  
+  .card-title {
+    font-size: 1.3rem;
+  }
+  
+  .amount-buttons {
+    gap: 8px;
+  }
+  
+  .amount-btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+}

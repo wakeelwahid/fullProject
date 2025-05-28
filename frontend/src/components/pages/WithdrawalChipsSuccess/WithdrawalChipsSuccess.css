@@ -1,0 +1,150 @@
+.withdrawal-success-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+}
+
+.success-container {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #FFD700;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.success-icon {
+  font-size: 5rem;
+  color: #4BB543;
+  margin-bottom: 20px;
+}
+
+.success-title {
+  color: #FFD700;
+  font-size: 2rem;
+  margin-bottom: 25px;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.success-details {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  text-align: left;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #FFEC8B;
+  font-weight: bold;
+}
+
+.detail-value {
+  color: white;
+}
+
+.detail-value.success {
+  color: #4BB543;
+  font-weight: bold;
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  background: rgba(212, 175, 55, 0.1);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 25px;
+  border-left: 4px solid #FFD700;
+}
+
+.message-icon {
+  font-size: 1.5rem;
+  color: #FFD700;
+  margin-right: 15px;
+}
+
+.success-message p {
+  color: white;
+  margin: 0;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.success-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+.success-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 25px;
+  border-radius: 30px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.home-btn {
+  background: linear-gradient(to right, #FFD700, #D4AF37);
+  color: #000;
+}
+
+.history-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid #FFD700;
+}
+
+.success-btn:hover {
+  opacity: 0.9;
+}
+
+.success-btn svg {
+  margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .success-container {
+    padding: 20px;
+  }
+  
+  .success-title {
+    font-size: 1.5rem;
+  }
+  
+  .success-buttons {
+    flex-direction: column;
+  }
+  
+  .success-btn {
+    width: 100%;
+  }
+}

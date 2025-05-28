@@ -1,0 +1,268 @@
+:root {
+  --gold: #FFD700;
+  --dark-gold: #D4AF37;
+  --red: #FF0000;
+  --dark-red: #8B0000;
+  --green: #00AA00;
+  --dark-green: #008800;
+  --blue: #1E90FF;
+  --dark-blue: #0066CC;
+  --black: #000000;
+  --dark-bg: #121212;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: var(--dark-bg);
+  color: white;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Floating Coins Animation */
+@keyframes floatCoin {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+}
+
+.floating-coin {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FFD700"><circle cx="12" cy="12" r="10"/><text x="12" y="16" font-size="10" text-anchor="middle" fill="%23000">₹</text></svg>');
+  background-size: contain;
+  animation: floatCoin 10s linear infinite;
+  z-index: -1;
+}
+
+/* Header Styles */
+.wallet-header {
+  text-align: center;
+  padding: 20px 0;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(139,0,0,0.6));
+  border-bottom: 3px solid var(--gold);
+}
+
+.wallet-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text x="10" y="50" font-family="Arial" font-size="20" fill="rgba(255,215,0,0.05)">₹</text></svg>');
+  opacity: 0.3;
+  z-index: -1;
+}
+
+.wallet-title {
+  font-size: 2.5rem;
+  margin: 0;
+  color: var(--gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+  letter-spacing: 2px;
+}
+
+/* KYC Button */
+.kyc-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 20px;
+  background: rgba(0,0,0,0.8);
+}
+
+.kyc-button {
+  background: linear-gradient(to right, var(--red), var(--dark-gold));
+  color: #000;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+
+/* Wallet Card */
+.wallet-card {
+  max-width: 1200px;
+  margin: 20px auto;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 15px;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Balance Section */
+.balance-section {
+  padding: 25px;
+  text-align: center;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.total-balance {
+  font-size: 3rem;
+  color: var(--gold);
+  margin: 10px 0;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.balance-label {
+  font-size: 1.2rem;
+  color: #ddd;
+  margin-bottom: 5px;
+}
+
+/* Amount Cards */
+.amount-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+
+.amount-card {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.amount-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+}
+
+.amount-value {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.deposit-amount .amount-value {
+  color: var(--green);
+}
+
+.winnings-amount .amount-value {
+  color: var(--gold);
+}
+
+.amount-label {
+  font-size: 1.1rem;
+  color: #aaa;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding: 0 20px 20px;
+}
+
+.action-btn {
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.deposit-btn {
+  background: linear-gradient(to right, var(--green), var(--dark-green));
+  color: white;
+}
+
+.withdraw-btn {
+  background: linear-gradient(to right, var(--blue), var(--dark-blue));
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Transaction History */
+.transaction-section {
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transaction-table th {
+  background: rgba(212, 175, 55, 0.2);
+  padding: 12px;
+  text-align: left;
+  color: var(--gold);
+}
+
+.transaction-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.transaction-table tr:hover {
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.credit {
+  color: var(--green);
+}
+
+.debit {
+  color: var(--red);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .wallet-title {
+    font-size: 2rem;
+  }
+  
+  .amount-cards, .action-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .total-balance {
+    font-size: 2.5rem;
+  }
+  
+  .transaction-table {
+    display: block;
+    overflow-x: auto;
+  }
+}

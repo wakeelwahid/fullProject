@@ -1,0 +1,191 @@
+/* Dashboard.css */
+:root {
+  --gold: #FFD700;
+  --silver: #C0C0C0;
+  --bronze: #CD7F32;
+  --dark-bg: #121212;
+  --card-bg: #1E1E1E;
+  --text-light: #FFFFFF;
+  --border-color: rgba(255, 215, 0, 0.2);
+}
+
+.dashboard {
+  background-color: var(--dark-bg);
+  
+  padding: 1rem;
+  color: var(--text-light);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dashboard-title {
+  color: var(--gold);
+  text-align: center;
+  margin: 1rem 0 2rem;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.trophy-icon {
+  font-size: 1.5em;
+}
+
+.leaderboard-table {
+  background-color: var(--card-bg);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+}
+
+.table-header {
+  display: flex;
+  background-color: rgba(255, 215, 0, 0.1);
+  padding: 0.75rem 1rem;
+  font-weight: bold;
+  border-bottom: 1px solid var(--border-color);
+  justify-content: space-around
+}
+
+.header-cell {
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.rank-header {
+  width: 4rem;
+  text-align: center;
+}
+
+.amount-header {
+  width: 8rem;
+  text-align: right;
+}
+
+.table-row {
+  display: flex;
+  padding: 0.75rem 1rem;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.top-rank {
+  background-color: rgba(255, 215, 0, 0.05);
+  display: flex;
+  justify-content: space-around;
+}
+
+.cell {
+  padding: 0.5rem;
+}
+
+.rank-cell {
+  width: 4rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.amount-cell {
+  width: 8rem;
+  text-align: right;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+/* Rank Badges */
+.gold-badge,
+.silver-badge,
+.bronze-badge {
+  display: inline-block;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  line-height: 1.75rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.gold-badge {
+  background-color: var(--gold);
+  color: #000;
+  box-shadow: 0 0 0.5rem var(--gold);
+}
+
+.silver-badge {
+  background-color: var(--silver);
+  color: #000;
+}
+
+.bronze-badge {
+  background-color: var(--bronze);
+  color: #000;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .dashboard-title {
+    font-size: 1.5rem;
+    margin: 0.5rem 0 1.5rem;
+  }
+  
+  .table-header {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .table-row {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .rank-header,
+  .rank-cell {
+    width: 3rem;
+  }
+  
+  .amount-header,
+  .amount-cell {
+    width: 6rem;
+  }
+  
+  .gold-badge,
+  .silver-badge,
+  .bronze-badge {
+    width: 1.5rem;
+    height: 1.5rem;
+    line-height: 1.5rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .dashboard {
+    padding: 0.5rem;
+  }
+  
+  .dashboard-title {
+    font-size: 1.3rem;
+  }
+  
+  .table-header,
+  .table-row {
+    font-size: 0.8rem;
+  }
+  
+  .rank-header,
+  .rank-cell {
+    width: 2.5rem;
+  }
+  
+  .amount-header,
+  .amount-cell {
+    width: 5rem;
+  }
+}

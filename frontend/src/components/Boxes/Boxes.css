@@ -1,0 +1,432 @@
+The code animates the .satta-content class by adding float and fade animations.
+```
+
+```replit_final_file
+:root {
+  --gold: #FFD700;
+  --gold-dark: #D4AF37;
+  --gold-light: #FFEC8B;
+}
+
+body {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  overflow-x: hidden;
+  font-family: 'Arial', sans-serif;
+  min-height: 100vh;
+}
+
+/* Animated Background */
+.bg-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  overflow: hidden;
+}
+
+.bg-particle {
+  position: absolute;
+  background: rgba(212, 175, 55, 0.1);
+  border-radius: 50%;
+  filter: blur(1px);
+  animation: float-particle linear infinite;
+}
+
+@keyframes float-particle {
+  0% {
+      transform: translateY(100vh) scale(0.5);
+      opacity: 0;
+  }
+  10% {
+      opacity: 0.3;
+  }
+  90% {
+      opacity: 0.3;
+  }
+  100% {
+      transform: translateY(-100px) scale(1);
+      opacity: 0;
+  }
+}
+
+.satta-container {
+  padding: 15px 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.satta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.satta-box-wrapper {
+  width: calc(50% - 5px);
+  perspective: 800px;
+}
+
+.satta-box {
+  margin: 0;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 243, 255, 0.2);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  position: relative;
+  color: white;
+  background-size: cover;
+  background-position: center;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 2px solid var(--neon-blue);
+  background: rgba(0, 243, 255, 0.1);
+  transform-style: preserve-3d;
+  background-blend-mode: overlay;
+}
+
+.satta-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(212,175,55,0.3) 100%);
+  z-index: 1;
+  transition: all 0.6s ease;
+}
+
+.satta-box::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+      to bottom right,
+      rgba(212,175,55,0) 0%,
+      rgba(212,175,55,0.3) 20%,
+      rgba(212,175,55,0) 40%
+  );
+  transform: rotate(30deg);
+  z-index: 2;
+}
+
+.satta-content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  transform: translateY(0) translateZ(0);
+  opacity: 1;
+  animation: contentFloat 3s ease-in-out infinite, contentFade 1s ease-in;
+}
+
+@keyframes contentFloat {
+  0%, 100% { transform: translateY(0) translateZ(0); }
+  50% { transform: translateY(-8px) translateZ(15px); }
+}
+
+@keyframes contentFade {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.satta-icon {
+  font-size: 2rem; /* Smaller icon */
+  margin-bottom: 12px;
+  display: inline-block;
+  color: var(--gold);
+  text-shadow: 0 0 15px rgba(212,175,55,0.9);
+  transform: scale(0.2) rotateY(180deg) rotateZ(90deg);
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  filter: drop-shadow(0 0 8px var(--gold));
+}
+
+.satta-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--gold);
+  text-shadow: 1px 1px 4px black;
+  transform: translateX(-40px) rotateY(30deg);
+  opacity: 0;
+  transition: all 0.6s ease;
+  font-size: 1.1rem; /* Smaller font */
+  letter-spacing: 0.5px;
+}
+
+.satta-number {
+  font-size: 1.8rem; /* Smaller font */
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 15px var(--gold);
+  margin: 10px 0;
+  transform: scale(0.3) translateZ(0);
+  opacity: 0;
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: linear-gradient(to right, var(--gold), var(--gold-light), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+}
+
+.satta-number::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: all 0.6s ease;
+}
+
+.satta-btn {
+  background: linear-gradient(45deg, var(--neon-blue), var(--primary-dark));
+  border: none;
+  border-radius: 25px;
+  padding: 10px 25px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  display: inline-block;
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
+  transform: translateY(0) translateZ(0);
+  opacity: 1;
+  transition: all 0.4s ease;
+  box-shadow: 0 5px 15px rgba(0, 243, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 1;
+  backdrop-filter: blur(5px);
+  animation: buttonPulse 2s infinite;
+}
+
+.satta-btn:hover {
+  transform: scale(1.05) translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 243, 255, 0.5);
+  background: linear-gradient(45deg, var(--primary-dark), var(--neon-blue));
+}
+
+.satta-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: rotate(45deg);
+  transition: 0.6s;
+}
+
+.satta-btn:hover::after {
+  animation: btnShine 1.5s infinite;
+}
+
+@keyframes buttonPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@keyframes btnShine {
+  0% { transform: rotate(45deg) translateX(-100%); }
+  100% { transform: rotate(45deg) translateX(100%); }
+}
+
+.satta-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.5),
+      transparent
+  );
+  transition: 0.5s;
+  z-index: -1;
+}
+
+/* Upcoming Box Special Style */
+.box-upcoming {
+  border: 2px dashed var(--gold);
+}
+
+.box-upcoming .satta-icon {
+  color: #fff;
+}
+
+.box-upcoming .satta-title {
+  color: #fff;
+}
+
+.box-upcoming .satta-number {
+  background: linear-gradient(to right, #fff, #ccc, #fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.box-upcoming .satta-btn {
+  background: linear-gradient(to right, #fff, #aaa);
+  color: #333;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) translateZ(0); }
+  50% { transform: translateY(-10px) translateZ(10px); }
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 10px var(--gold); }
+  50% { box-shadow: 0 0 25px var(--gold); }
+  100% { box-shadow: 0 0 10px var(--gold); }
+}
+
+@keyframes shine {
+  0% { top: -50%; left: -50%; }
+  100% { top: 150%; left: 150%; }
+}
+
+@keyframes borderPulse {
+  0% { border-color: var(--gold); }
+  50% { border-color: white; }
+  100% { border-color: var(--gold); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Box styles without hover */
+.satta-box {
+  animation: glow 2s infinite;
+}
+
+.satta-content {
+  transform: translateY(0) translateZ(0);
+  opacity: 1;
+}
+
+.satta-icon {
+  transform: scale(1) rotateY(0deg) rotateZ(0deg);
+  animation: float 3s ease-in-out infinite;
+}
+
+.satta-title {
+  transform: translateX(0) rotateY(0deg);
+  opacity: 1;
+}
+
+.satta-number {
+  transform: scale(1) translateZ(0);
+  opacity: 1;
+}
+
+.satta-btn {
+  transform: translateY(0) translateZ(0);
+  opacity: 1;
+}
+
+/* Floating coins animation */
+.floating-coins {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.coin {
+  position: absolute;
+  color: var(--gold);
+  opacity: 0;
+  animation: float-coin linear infinite;
+  z-index: -1;
+  filter: drop-shadow(0 0 4px var(--gold));
+}
+
+@keyframes float-coin {
+  0% {
+      transform: translateY(100vh) rotate(0deg) scale(0.5);
+      opacity: 0;
+  }
+  20% {
+      opacity: 0.4;
+  }
+  80% {
+      opacity: 0.4;
+  }
+  100% {
+      transform: translateY(-100px) rotate(360deg) scale(1);
+      opacity: 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (min-width: 576px) {
+  .satta-box-wrapper {
+      width: calc(50% - 5px);
+  }
+}
+
+@media (min-width: 768px) {
+  .satta-box-wrapper {
+      width: calc(33.333% - 7px);
+  }
+
+  .satta-box {
+      height: 200px;
+  }
+}
+
+@media (min-width: 992px) {
+  .satta-box-wrapper {
+      width: calc(25% - 8px);
+  }
+
+  .satta-box {
+      height: 220px;
+  }
+
+  .satta-icon {
+    font-size: 2.2rem;
+  }
+
+  .satta-title {
+    font-size: 1.2rem;
+  }
+
+  .satta-number {
+    font-size: 2rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .satta-box-wrapper {
+      width: calc(20% - 8px);
+  }
+}
