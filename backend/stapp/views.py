@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
@@ -17,16 +16,22 @@ import random
 import string
 from decimal import Decimal
 from django.contrib.auth.hashers import make_password
+from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import RegisterSerializer, MobileTokenObtainPairSerializer, AdminTokenSerializer, WithdrawRequestSerializer, DepositRequestSerializer, DepositActionSerializer, ReferralCommissionSerializer
+from django.utils import timezone
+from datetime import timedelta
+
 
 def generate_referral_code(username, mobile):
     """Generate a unique referral code based on username and mobile"""
     # Take first 3 chars of username and last 4 digits of mobile
     username_part = username[:3].upper() if username else "USR"
     mobile_part = mobile[-4:] if mobile and len(mobile) >= 4 else "0000"
-    
+
     # Add 2 random characters for uniqueness
     random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=2))
-    
+
     return f"{username_part}{mobile_part}{random_part}"
 
 @csrf_exempt
@@ -43,13 +48,13 @@ def register_user(request):
             # Check if user already exists
             if User.objects.filter(username=username).exists():
                 return JsonResponse({'error': 'Username already exists'}, status=400)
-            
+
             if User.objects.filter(mobile=mobile).exists():
                 return JsonResponse({'error': 'Mobile number already exists'}, status=400)
 
             # Generate unique referral code for new user
             new_referral_code = generate_referral_code(username, mobile)
-            
+
             # Ensure referral code is unique
             while User.objects.filter(referral_code=new_referral_code).exists():
                 new_referral_code = generate_referral_code(username, mobile)
@@ -74,7 +79,7 @@ def register_user(request):
                     referrer_wallet = Wallet.objects.get(user=referrer)
                     referrer_wallet.bonus += Decimal('50.00')
                     referrer_wallet.save()
-                    
+
                     # Create referral commission record
                     ReferralCommission.objects.create(
                         referrer=referrer,
@@ -107,7 +112,7 @@ def login_user(request):
 
             # Authenticate user
             user = authenticate(request, username=mobile, password=password)
-            
+
             if user is not None:
                 # Generate JWT tokens
                 refresh = RefreshToken.for_user(user)
@@ -144,7 +149,7 @@ def get_user_profile(request):
         if not user.referral_code:
             user.referral_code = generate_referral_code(user.username, user.mobile)
             user.save()
-        
+
         return Response({
             'id': user.id,
             'username': user.username,
@@ -189,7 +194,7 @@ def place_bet(request):
         # Check if user has sufficient balance
         wallet = Wallet.objects.get(user=request.user)
         total_balance = wallet.balance + wallet.bonus
-        
+
         if total_balance < amount:
             return Response({'error': 'Insufficient balance'}, status=400)
 
@@ -200,7 +205,7 @@ def place_bet(request):
             remaining = amount - wallet.balance
             wallet.balance = Decimal('0.00')
             wallet.bonus -= remaining
-        
+
         wallet.save()
 
         # Create bet record
@@ -220,16 +225,16 @@ def place_bet(request):
                     referred_user=request.user,
                     commission_type='signup_bonus'
                 ).first()
-                
+
                 if referrer_commission:
                     referrer = referrer_commission.referrer
                     commission_amount = amount * Decimal('0.01')  # 1%
-                    
+
                     # Add commission to referrer's bonus
                     referrer_wallet = Wallet.objects.get(user=referrer)
                     referrer_wallet.bonus += commission_amount
                     referrer_wallet.save()
-                    
+
                     # Create commission record
                     ReferralCommission.objects.create(
                         referrer=referrer,
@@ -261,7 +266,7 @@ def declare_result(request):
 
         # Find all bets for this game
         bets = Bet.objects.filter(game_name=game_name, status='pending')
-        
+
         for bet in bets:
             if bet.number == winning_number:
                 # User won
@@ -284,7 +289,7 @@ def declare_result(request):
 def get_referral_info(request):
     try:
         user = request.user
-        
+
         # Get referral stats
         total_referrals = User.objects.filter(
             id__in=ReferralCommission.objects.filter(
@@ -292,17 +297,302 @@ def get_referral_info(request):
                 commission_type='signup_bonus'
             ).values_list('referred_user_id', flat=True)
         ).count()
-        
+
         total_earnings = ReferralCommission.objects.filter(
             referrer=user
         ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
-        
+
         return Response({
             'referral_code': user.referral_code,
             'total_referrals': total_referrals,
             'total_earnings': str(total_earnings),
             'referral_url': f"https://yourapp.com/register?ref={user.referral_code}"
         })
-        
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+# Class-based views for better structure
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'message': 'User registered successfully',
+                'referral_code': user.referral_code
+            }, status=201)
+        return Response(serializer.errors, status=400)
+
+class MobileLoginView(TokenObtainPairView):
+    serializer_class = MobileTokenObtainPairSerializer
+
+class AdminTokenObtainPairView(TokenObtainPairView):
+    serializer_class = AdminTokenSerializer
+
+# API Views
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_profile(request):
+    return get_user_profile(request)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def wallet_balance(request):
+    return get_wallet_balance(request)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def withdraw_request(request):
+    try:
+        amount = Decimal(str(request.data.get('amount', 0)))
+        wallet = Wallet.objects.get(user=request.user)
+
+        if wallet.balance < amount:
+            return Response({'error': 'Insufficient balance'}, status=400)
+
+        # Create withdraw request
+        withdraw_req = WithdrawRequest.objects.create(
+            user=request.user,
+            amount=amount
+        )
+
+        return Response({'message': 'Withdraw request submitted successfully'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def transaction_history(request):
+    try:
+        transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
+        data = []
+        for txn in transactions:
+            data.append({
+                'id': txn.id,
+                'type': txn.transaction_type,
+                'amount': str(txn.amount),
+                'status': txn.status,
+                'created_at': txn.created_at
+            })
+        return Response(data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def view_bets_24h(request):
+    try:
+        yesterday = timezone.now() - timedelta(hours=24)
+        bets = Bet.objects.filter(user=request.user, created_at__gte=yesterday)
+        data = []
+        for bet in bets:
+            data.append({
+                'id': bet.id,
+                'game': bet.game,
+                'number': bet.number,
+                'amount': str(bet.amount),
+                'status': 'won' if bet.is_win else 'lost',
+                'created_at': bet.created_at
+            })
+        return Response(data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def view_bets_30d(request):
+    try:
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        bets = Bet.objects.filter(user=request.user, created_at__gte=thirty_days_ago)
+        data = []
+        for bet in bets:
+            data.append({
+                'id': bet.id,
+                'game': bet.game,
+                'number': bet.number,
+                'amount': str(bet.amount),
+                'status': 'won' if bet.is_win else 'lost',
+                'created_at': bet.created_at
+            })
+        return Response(data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_bet_history(request):
+    try:
+        bets = Bet.objects.filter(user=request.user).order_by('-created_at')
+        data = []
+        for bet in bets:
+            data.append({
+                'id': bet.id,
+                'game': bet.game,
+                'number': bet.number,
+                'amount': str(bet.amount),
+                'status': 'won' if bet.is_win else 'lost',
+                'payout': str(bet.payout) if bet.payout else '0',
+                'created_at': bet.created_at
+            })
+        return Response(data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+# Admin Views
+class AdminGroupedBetStatsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            bets = Bet.objects.all().order_by('-created_at')
+            data = []
+            for bet in bets:
+                data.append({
+                    'id': bet.id,
+                    'user': bet.user.username,
+                    'game': bet.game,
+                    'number': bet.number,
+                    'amount': str(bet.amount),
+                    'is_win': bet.is_win,
+                    'created_at': bet.created_at
+                })
+            return Response(data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_withdraw_requests(request):
+    try:
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=403)
+
+        requests = WithdrawRequest.objects.all().order_by('-created_at')
+        serializer = WithdrawRequestSerializer(requests, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_transactions(request):
+    try:
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=403)
+
+        transactions = Transaction.objects.all().order_by('-created_at')
+        data = []
+        for txn in transactions:
+            data.append({
+                'id': txn.id,
+                'user': txn.user.username,
+                'type': txn.transaction_type,
+                'amount': str(txn.amount),
+                'status': txn.status,
+                'created_at': txn.created_at
+            })
+        return Response(data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def user_deposit_request(request):
+    try:
+        serializer = DepositRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            deposit_request = serializer.save(user=request.user)
+            return Response({
+                'message': 'Deposit request submitted successfully',
+                'request_id': deposit_request.id
+            }, status=201)
+        return Response(serializer.errors, status=400)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_list_deposit_requests(request):
+    try:
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=403)
+
+        requests = DepositRequest.objects.all().order_by('-created_at')
+        serializer = DepositRequestSerializer(requests, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_deposit_action(request):
+    try:
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=403)
+
+        serializer = DepositActionSerializer(data=request.data)
+        if serializer.is_valid():
+            deposit_id = serializer.validated_data['deposit_id']
+            action = serializer.validated_data['action']
+
+            deposit_request = DepositRequest.objects.get(id=deposit_id)
+
+            if action == 'approve':
+                deposit_request.status = 'approved'
+                # Add money to user wallet
+                wallet = Wallet.objects.get(user=deposit_request.user)
+                wallet.balance += deposit_request.amount
+                wallet.save()
+            else:
+                deposit_request.status = 'rejected'
+
+            deposit_request.save()
+            return Response({'message': f'Deposit request {action}d successfully'})
+
+        return Response(serializer.errors, status=400)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def referral_earnings(request):
+    try:
+        commissions = ReferralCommission.objects.filter(referrer=request.user)
+        serializer = ReferralCommissionSerializer(commissions, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_referral_summary(request):
+    try:
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=403)
+
+        commissions = ReferralCommission.objects.all().order_by('-created_at')
+        serializer = ReferralCommissionSerializer(commissions, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_referral_summary(request):
+    return get_referral_info(request)
+
+@api_view(['GET'])
+def game_status(request):
+    try:
+        # Return current game status
+        return Response({
+            'games': [
+                {'name': 'faridabad', 'status': 'active'},
+                {'name': 'gali', 'status': 'active'},
+                {'name': 'disawar', 'status': 'active'},
+                {'name': 'ghaziabad', 'status': 'active'}
+            ]
+        })
     except Exception as e:
         return Response({'error': str(e)}, status=500)
