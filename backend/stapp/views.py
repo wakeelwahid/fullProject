@@ -237,9 +237,22 @@ class AdminGroupedBetStatsAPIView(APIView):
     def get(self, request):
         games = ['gali', 'faridabad', 'disawer', 'ghaziabad', 'jaipur king', 'diamond king']
         game_data = {}
+        now = timezone.now()
 
         for game in games:
-            game_bets = Bet.objects.filter(game__iexact=game)
+            # Filter bets based on game timing
+            if game.lower() == 'diamond king':
+                # Show last 2.5 hour window for diamond king
+                start_time = now - timedelta(hours=2, minutes=30)
+                game_bets = Bet.objects.filter(
+                    game__iexact=game,
+                    created_at__gte=start_time,
+                    created_at__lte=now
+                )
+            else:
+                # Show today's bets for other games
+                today = now.date()
+                game_bets = Bet.objects.filter(game__iexact=game, created_at__date=today)
 
             number_bets = (
                 game_bets.filter(bet_type='number')
@@ -567,8 +580,51 @@ def declare_result(request):
     except ValueError:
         return Response({"error": "winning_number must be an integer"}, status=400)
 
+    # Get game timing based on current time and game schedule
+    now = timezone.now()
+    current_time = now.time()
+    
+    # Game schedules
+    game_schedules = {
+        'jaipur king': {
+            'lock_time': timezone.datetime.strptime('16:50', '%H:%M').time(),
+            'open_time': timezone.datetime.strptime('17:00', '%H:%M').time(),
+        },
+        'faridabad': {
+            'lock_time': timezone.datetime.strptime('18:00', '%H:%M').time(),
+        },
+        'ghaziabad': {
+            'lock_time': timezone.datetime.strptime('21:30', '%H:%M').time(),
+        },
+        'gali': {
+            'lock_time': timezone.datetime.strptime('23:00', '%H:%M').time(),
+        },
+        'disawer': {
+            'lock_time': timezone.datetime.strptime('02:30', '%H:%M').time(),
+        },
+        'diamond king': {
+            # Multiple times between 10am-12pm every 2.5 hours
+            'is_multiple': True,
+            'start_time': timezone.datetime.strptime('10:00', '%H:%M').time(),
+            'end_time': timezone.datetime.strptime('12:00', '%H:%M').time(),
+        }
+    }
+
+    # Get only bets placed within valid game timing
     today = timezone.now().date()
-    bets = Bet.objects.filter(game__iexact=game, created_at__date=today)
+    
+    # For diamond king, filter by 2.5 hour windows
+    if game.lower() == 'diamond king':
+        # Get bets from last 2.5 hour window
+        last_window = now - timedelta(hours=2, minutes=30)
+        bets = Bet.objects.filter(
+            game__iexact=game, 
+            created_at__gte=last_window,
+            created_at__lte=now
+        )
+    else:
+        # For other games, get today's bets within game timing
+        bets = Bet.objects.filter(game__iexact=game, created_at__date=today)
 
     win_count = 0
     for bet in bets:
@@ -576,19 +632,23 @@ def declare_result(request):
             bet.is_win = True
             win_amount = Decimal(0)
 
-            # 💰 Payout logic
-            if game.lower() in ['jaipur king', 'diamond king']:
-                # No commission games
+            # 💰 Updated Payout logic
+            if game.lower() == 'jaipur king':
                 if bet.bet_type == 'number':
                     win_amount = bet.amount * Decimal('100')  # 100x payout
-                else:
+                else:  # andar/bahar
                     win_amount = bet.amount * Decimal('10')   # 10x for andar/bahar
-            else:
-                # Commission-allowed games
+            elif game.lower() == 'diamond king':
                 if bet.bet_type == 'number':
-                    win_amount = bet.amount * Decimal('0.91')  # 91% payout
-                else:
-                    win_amount = bet.amount * Decimal('9')     # 9x for andar/bahar
+                    win_amount = bet.amount * Decimal('90')   # 90x payout
+                else:  # andar/bahar
+                    win_amount = bet.amount * Decimal('9')    # 9x for andar/bahar
+            else:
+                # faridabad, gali, disawer, ghaziabad
+                if bet.bet_type == 'number':
+                    win_amount = bet.amount * Decimal('91')   # 91x payout
+                else:  # andar/bahar
+                    win_amount = bet.amount * Decimal('9')    # 9x for andar/bahar
 
             bet.payout = win_amount.quantize(Decimal('0.01'))
             bet.save()
@@ -704,3 +764,47 @@ def user_referral_summary(request):
         "commission_earned": float(commission_total),
         "total_earned": float(total_earned),
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def game_status(request):
+    now = timezone.now()
+    current_time = now.time()
+    
+    # Game schedules with timings
+    games_status = {
+        'jaipur king': {
+            'lock_time': '16:50',
+            'open_time': '17:00',
+            'payout': {'number': '100x', 'andar_bahar': '10x'}
+        },
+        'faridabad': {
+            'lock_time': '18:00',
+            'open_time': '18:00',
+            'payout': {'number': '91x', 'andar_bahar': '9x'}
+        },
+        'ghaziabad': {
+            'lock_time': '21:30',
+            'open_time': '21:30',
+            'payout': {'number': '91x', 'andar_bahar': '9x'}
+        },
+        'gali': {
+            'lock_time': '23:00',
+            'open_time': '23:00',
+            'payout': {'number': '91x', 'andar_bahar': '9x'}
+        },
+        'disawer': {
+            'lock_time': '02:30',
+            'open_time': '02:30',
+            'payout': {'number': '91x', 'andar_bahar': '9x'}
+        },
+        'diamond king': {
+            'lock_time': 'Every 2:30 hours',
+            'open_time': '10:00-12:00',
+            'payout': {'number': '90x', 'andar_bahar': '9x'},
+            'is_multiple': True
+        }
+    }
+    
+    return Response(games_status)

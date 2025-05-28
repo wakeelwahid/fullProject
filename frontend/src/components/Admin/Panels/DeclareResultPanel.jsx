@@ -11,12 +11,12 @@ const DeclareResultPanel = () => {
   const [loading, setLoading] = useState(false);
 
   const games = [
-    "DISAWAR",
-    "GALI",
-    "FARIDABAD",
-    "GHAZIABAD",
-    "JAIPUR KING",
-    "DIAMOND KING",
+    { name: "DISAWER", lockTime: "02:30 AM", payout: "91x/9x" },
+    { name: "GALI", lockTime: "11:00 PM", payout: "91x/9x" },
+    { name: "FARIDABAD", lockTime: "06:00 PM", payout: "91x/9x" },
+    { name: "GHAZIABAD", lockTime: "09:30 PM", payout: "91x/9x" },
+    { name: "JAIPUR KING", lockTime: "04:50 PM", payout: "100x/10x" },
+    { name: "DIAMOND KING", lockTime: "Every 2:30 hrs", payout: "90x/9x" },
   ];
 
   const handleSubmit = (e) => {
@@ -75,8 +75,8 @@ const DeclareResultPanel = () => {
           >
             <option value="">Select a game</option>
             {games.map((game) => (
-              <option key={game} value={game}>
-                {game}
+              <option key={game.name} value={game.name}>
+                {game.name} - Lock: {game.lockTime} - Payout: {game.payout}
               </option>
             ))}
           </select>
@@ -105,6 +105,7 @@ const DeclareResultPanel = () => {
           <div className="popup-content">
             <h3>Confirm Result Declaration</h3>
             <p>Game: {selectedGame}</p>
+            <p>Payout: Number bets get higher multiplier, Andar/Bahar get lower multiplier</p>
             <p>Number: {winningNumber}</p>
             <div className="popup-buttons">
               <button onClick={confirmDeclare} className="confirm-btn">

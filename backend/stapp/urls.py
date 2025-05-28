@@ -24,30 +24,14 @@ urlpatterns = [
     path('deposit-requests/', user_deposit_request, name='user_deposit_request'),  # user POST deposit request
     path('admin/deposit-requests/',admin_list_deposit_requests, name='admin_list_deposit_requests'),  # admin GET all requests
     path('admin/deposit-action/',admin_deposit_action, name='admin_deposit_action'),  # admin POST approve/reject
-    
+
     # 🏁 Admin Result Declaration
     path('admin/declare-result/', declare_result, name='declare-result'),
 
     # 🧾 User Bet History
-   
+
     path('user/referrals/', referral_earnings,name="referral_earnings"),
     path('admin/referral-summary/',admin_referral_summary,name="admin_referral_summary"),
     path('user/my-referrals/', user_referral_summary,name="user_referral_summary"),
-    
-
-
-
-
-
-
-
+    path('game-status/', game_status, name='game-status'),
 ]
-
-
-
-
-
-
-
-
-
