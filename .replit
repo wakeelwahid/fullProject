@@ -37,6 +37,24 @@ args = "cd backend && python manage.py runserver 0.0.0.0:8000"
 task = "shell.exec"
 args = "cd frontend && npm run dev"
 
+[[workflows.workflow]]
+name = "Backend Server"
+author = 43239033
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && python manage.py runserver 0.0.0.0:8000"
+
+[[workflows.workflow]]
+name = "Frontend Server"
+author = 43239033
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm run dev -- --port 5174"
+
 [[ports]]
 localPort = 5173
 externalPort = 80
