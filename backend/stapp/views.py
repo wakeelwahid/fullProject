@@ -110,7 +110,10 @@ def login_user(request):
             mobile = data.get('mobile')
             password = data.get('password')
 
-            # Authenticate user
+            if not mobile or not password:
+                return JsonResponse({'error': 'Mobile and password are required'}, status=400)
+
+            # Authenticate user using mobile number
             user = authenticate(request, username=mobile, password=password)
 
             if user is not None:
@@ -120,8 +123,8 @@ def login_user(request):
 
                 return JsonResponse({
                     'message': 'Login successful',
-                    'access_token': str(access_token),
-                    'refresh_token': str(refresh),
+                    'access': str(access_token),
+                    'refresh': str(refresh),
                     'user': {
                         'id': user.id,
                         'username': user.username,
@@ -131,7 +134,7 @@ def login_user(request):
                     }
                 }, status=200)
             else:
-                return JsonResponse({'error': 'Invalid credentials'}, status=401)
+                return JsonResponse({'error': 'Invalid mobile number or password'}, status=401)
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)

@@ -1,10 +1,10 @@
-
 from django.urls import path
 from .views import *
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .views import MobileLoginView, AdminTokenObtainPairView, RegisterView
 
 urlpatterns = [
-    path('register/', register_user, name='register'),
+    path('register/', RegisterView.as_view(), name='register'),
     path('login/', login_user, name='login'),
     path('profile/', get_user_profile, name='user-profile'),
     path('balance/', get_wallet_balance, name='wallet-balance'),

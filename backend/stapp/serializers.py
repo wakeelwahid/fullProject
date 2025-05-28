@@ -78,6 +78,9 @@ class AdminTokenSerializer(TokenObtainPairSerializer):
         username = attrs.get("username")
         password = attrs.get("password")
 
+        if not username or not password:
+            raise serializers.ValidationError("Username and password are required.")
+
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
@@ -87,11 +90,15 @@ class AdminTokenSerializer(TokenObtainPairSerializer):
             raise serializers.ValidationError("Invalid username or password.")
 
         if not user.is_staff:
-            raise serializers.ValidationError("You are not authorized as admin.")
+            raise serializers.ValidationError("Access denied. Admin privileges required.")
 
-        self.user = user
-        data = super().validate(attrs)
-        data['username'] = user.username
+        # Set the user for the parent class
+        refresh = self.get_token(user)
+        data = {
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'username': user.username
+        }
         return data
 
 

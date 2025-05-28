@@ -20,7 +20,9 @@ const Login = () => {
       });
 
       localStorage.setItem("token", response.data.access);
-      navigate("/wallet"); // or dashboard
+      localStorage.setItem("refreshToken", response.data.refresh);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      navigate("/wallet");
     } catch (err) {
       setError("Invalid mobile or password.");
     }

@@ -33,12 +33,19 @@ const AdminLogin = () => {
 
       navigate("/admin/dashboard");
     } catch (err) {
-      if (err.response && err.response.status === 401) {
+      console.error("Login error:", err.response?.data || err.message);
+      
+      if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else if (err.response?.data?.non_field_errors) {
+        setError(err.response.data.non_field_errors[0]);
+      } else if (err.response?.status === 401) {
         setError("Invalid username or password");
+      } else if (err.response?.status === 403) {
+        setError("Access denied. Admin privileges required.");
       } else {
         setError("Server error. Please try again later.");
       }
-      console.error("Login error:", err.response || err.message);
     }
   };
 
