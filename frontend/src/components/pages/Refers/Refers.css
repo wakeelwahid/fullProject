@@ -219,39 +219,59 @@ body {
 .share-buttons {
   display: flex;
   gap: 15px;
-  margin-top: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .share-btn {
-  padding: 12px 25px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s;
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  min-width: 140px;
+  justify-content: center;
 }
 
 .copy-btn {
-  background: linear-gradient(to right, var(--gold), var(--dark-gold));
+  background: linear-gradient(135deg, var(--gold), var(--dark-gold));
   color: #000;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.3);
 }
 
 .whatsapp-btn {
-  background: linear-gradient(to right, #25D366, #128C7E);
+  background: linear-gradient(135deg, #25D366, #128C7E);
   color: white;
+  box-shadow: 0 3px 10px rgba(37, 211, 102, 0.3);
 }
 
 .telegram-btn {
-  background: linear-gradient(to right, #0088cc, #006699);
+  background: linear-gradient(135deg, #0088cc, #005fa3);
   color: white;
+  box-shadow: 0 3px 10px rgba(0, 136, 204, 0.3);
 }
 
 .share-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+
+.copy-btn:hover {
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.5);
+}
+
+.whatsapp-btn:hover {
+  box-shadow: 0 5px 15px rgba(37, 211, 102, 0.5);
+}
+
+.telegram-btn:hover {
+  box-shadow: 0 5px 15px rgba(0, 136, 204, 0.5);
 }
 
 /* How It Works */
@@ -351,7 +371,7 @@ body {
   .benefits-grid, .steps, .commission-cards {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -361,16 +381,16 @@ body {
   .benefits-grid, .steps, .commission-cards, .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .share-buttons {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .refer-title {
     font-size: 2rem;
   }
-  
+
   .refer-subtitle {
     font-size: 1rem;
     padding: 0 15px;

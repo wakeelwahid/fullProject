@@ -10,7 +10,13 @@ const Refers = () => {
     const fetchReferralData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://127.0.0.1:8000/api/user/my-referrals/", {
+        if (!token) {
+          console.error("No token found");
+          setLoading(false);
+          return;
+        }
+        
+        const res = await axios.get("/api/user/my-referrals/", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -18,6 +24,14 @@ const Refers = () => {
         setReferralData(res.data);
       } catch (error) {
         console.error("Error fetching referral data:", error);
+        // Set default data if API fails
+        setReferralData({
+          referral_code: "LOADING...",
+          total_referrals: 0,
+          direct_bonus: 0,
+          commission_earned: 0,
+          total_earned: 0
+        });
       } finally {
         setLoading(false);
       }
@@ -97,16 +111,41 @@ const Refers = () => {
             <button
               className="share-btn copy-btn"
               onClick={() => {
-                navigator.clipboard.writeText(referralData?.referral_code || "");
-                alert("Referral code copied!");
+                const code = referralData?.referral_code || "";
+                navigator.clipboard.writeText(code).then(() => {
+                  alert("Referral code copied!");
+                }).catch(() => {
+                  // Fallback for older browsers
+                  const textArea = document.createElement("textarea");
+                  textArea.value = code;
+                  document.body.appendChild(textArea);
+                  textArea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textArea);
+                  alert("Referral code copied!");
+                });
               }}
             >
               <i className="fas fa-copy" /> COPY CODE
             </button>
-            <button className="share-btn whatsapp-btn">
+            <button 
+              className="share-btn whatsapp-btn"
+              onClick={() => {
+                const message = `Join me on Satta King using my referral code: ${referralData?.referral_code || ""} and get ₹50 bonus on your first deposit! ${window.location.origin}`;
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+              }}
+            >
               <i className="fab fa-whatsapp" /> SHARE ON WHATSAPP
             </button>
-            <button className="share-btn telegram-btn">
+            <button 
+              className="share-btn telegram-btn"
+              onClick={() => {
+                const message = `Join me on Satta King using my referral code: ${referralData?.referral_code || ""} and get ₹50 bonus on your first deposit! ${window.location.origin}`;
+                const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(message)}`;
+                window.open(telegramUrl, '_blank');
+              }}
+            >
               <i className="fab fa-telegram" /> SHARE ON TELEGRAM
             </button>
           </div>

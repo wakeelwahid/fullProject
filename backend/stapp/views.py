@@ -34,6 +34,18 @@ class AdminTokenObtainPairView(TokenObtainPairView):
 @permission_classes([IsAuthenticated])
 def user_profile(request):
     user = request.user
+    # Ensure referral code exists
+    if not user.referral_code:
+        # Generate referral code if it doesn't exist
+        base = user.username[:3].upper()
+        import uuid
+        while True:
+            code = base + uuid.uuid4().hex[:4].upper()
+            if not User.objects.filter(referral_code=code).exists():
+                user.referral_code = code
+                user.save()
+                break
+    
     return Response({
         "id": user.id,
         "username": user.username,

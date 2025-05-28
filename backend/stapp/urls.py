@@ -32,6 +32,6 @@ urlpatterns = [
 
     path('user/referrals/', referral_earnings,name="referral_earnings"),
     path('admin/referral-summary/',admin_referral_summary,name="admin_referral_summary"),
-    path('user/my-referrals/', user_referral_summary,name="user_referral_summary"),
+    path('user/my-referrals/', user_referral_summary, name='user_referral_summary'),
     path('game-status/', game_status, name='game-status'),
 ]
