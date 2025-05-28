@@ -47,10 +47,15 @@ def user_profile(request):
 @permission_classes([IsAuthenticated])
 def wallet_balance(request):
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
+    
+    # Calculate total balance = winnings + bonus
+    total_balance = wallet.winnings + wallet.bonus
+    
     return Response({
-        'balance': str(wallet.balance),
+        'balance': str(total_balance),  # Total balance for display
         'bonus': str(wallet.bonus),
-        'winnings': str(wallet.winnings)
+        'winnings': str(wallet.winnings),  # Only this is withdrawable
+        'withdrawable_balance': str(wallet.winnings)  # Explicitly show withdrawable amount
     })
 
 
@@ -70,8 +75,9 @@ def withdraw_request(request):
     except Wallet.DoesNotExist:
         return Response({'error': 'Wallet not found'}, status=400)
 
-    if wallet.balance < amount:
-        return Response({'error': 'Insufficient balance'}, status=400)
+    # Only allow withdrawal from winnings amount
+    if wallet.winnings < amount:
+        return Response({'error': 'Insufficient withdrawable balance. Only winnings amount can be withdrawn.'}, status=400)
 
     WithdrawRequest.objects.create(user=request.user, amount=amount)
     return Response({'message': 'Withdrawal request submitted, pending admin approval'})
@@ -119,10 +125,20 @@ def place_bet(request):
     except Wallet.DoesNotExist:
         return Response({'error': 'Wallet not found'}, status=400)
 
-    if wallet.balance < amount:
+    # Calculate total available balance (winnings + bonus)
+    total_available = wallet.winnings + wallet.bonus
+    
+    if total_available < amount:
         return Response({'error': 'Insufficient balance'}, status=400)
 
-    wallet.balance -= amount
+    # Deduct from winnings first, then bonus if needed
+    if wallet.winnings >= amount:
+        wallet.winnings -= amount
+    else:
+        remaining_amount = amount - wallet.winnings
+        wallet.winnings = Decimal('0')
+        wallet.bonus -= remaining_amount
+    
     wallet.save()
 
     bet = Bet.objects.create(
@@ -376,11 +392,12 @@ def admin_withdraw_requests(request):
         if action == "approve":
             wallet = Wallet.objects.get(user=withdraw.user)
             
-            if wallet.balance < withdraw.amount:
-                return Response({"error": "User has insufficient balance"}, status=400)
+            # Check if user has sufficient winnings (only winnings can be withdrawn)
+            if wallet.winnings < withdraw.amount:
+                return Response({"error": "User has insufficient withdrawable balance"}, status=400)
 
-            # Deduct from wallet
-            wallet.balance -= withdraw.amount
+            # Deduct from winnings only
+            wallet.winnings -= withdraw.amount
             wallet.save()
 
             # Update withdrawal status

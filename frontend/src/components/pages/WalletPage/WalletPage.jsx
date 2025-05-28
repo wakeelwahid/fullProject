@@ -5,7 +5,12 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 const WalletPage = () => {
-  const [wallet, setWallet] = useState({ balance: '0.00', bonus: '0.00', winnings: '0.00' });
+  const [wallet, setWallet] = useState({ 
+    balance: '0.00', 
+    bonus: '0.00', 
+    winnings: '0.00',
+    withdrawable_balance: '0.00'
+  });
 
   useEffect(() => {
   const fetchBalance = async () => {
@@ -55,13 +60,13 @@ const WalletPage = () => {
           <div className="amount-card deposit-amount">
             <div className="amount-label">WINNINGS AMOUNT</div>
             <div className="amount-value">₹{wallet.winnings}</div>
-            <div className="amount-subtext"> Available for withdrawal</div>
+            <div className="amount-subtext">Available for withdrawal</div>
           </div>
 
           <div className="amount-card winnings-amount">
             <div className="amount-label">BONUS AMOUNT</div>
             <div className="amount-value">₹{wallet.bonus}</div>
-            <div className="amount-subtext">Total bonus</div>
+            <div className="amount-subtext">Cannot be withdrawn</div>
           </div>
         </div>
 
