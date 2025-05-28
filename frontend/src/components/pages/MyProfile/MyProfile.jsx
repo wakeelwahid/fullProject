@@ -24,17 +24,24 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
         const headers = { Authorization: `Bearer ${token}` };
 
         const [profileRes, walletRes] = await Promise.all([
-          axios.get("/api/profile/"),
-          axios.get("/api/balance/"),
+          axios.get("/api/profile/", { headers }),
+          axios.get("/api/balance/", { headers }),
         ]);
 
+        console.log("Profile data:", profileRes.data);
         setUser(profileRes.data);
         setWallet(walletRes.data);
       } catch (err) {
         console.error("Failed to load profile or balance", err);
+        console.error("Error details:", err.response?.data);
       }
     };
 

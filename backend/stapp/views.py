@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import models
 from .models import *
 import json
 import random
@@ -139,6 +140,11 @@ def login_user(request):
 def get_user_profile(request):
     try:
         user = request.user
+        # Generate referral code if it doesn't exist
+        if not user.referral_code:
+            user.referral_code = generate_referral_code(user.username, user.mobile)
+            user.save()
+        
         return Response({
             'id': user.id,
             'username': user.username,
