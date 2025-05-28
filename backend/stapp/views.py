@@ -525,11 +525,37 @@ def admin_deposit_action(request):
     if action == 'approve':
         # Update wallet balance
         wallet = Wallet.objects.get(user=deposit.user)
-        wallet.balance += deposit.amount
+        wallet.winnings += deposit.amount
         wallet.save()
 
         deposit.status = 'approved'
         deposit.save()
+
+        # Check for referral bonus (₹50 for first deposit ≥ ₹100)
+        if deposit.amount >= 100 and deposit.user.referred_by:
+            # Check if this is user's first approved deposit
+            previous_deposits = DepositRequest.objects.filter(
+                user=deposit.user, 
+                status='approved'
+            ).exclude(id=deposit.id).count()
+            
+            if previous_deposits == 0:  # This is first deposit
+                try:
+                    referrer = User.objects.get(referral_code=deposit.user.referred_by)
+                    referrer_wallet = Wallet.objects.get(user=referrer)
+                    referrer_wallet.bonus += Decimal('50')  # ₹50 referral bonus
+                    referrer_wallet.save()
+                    
+                    # Create transaction record for referrer
+                    Transaction.objects.create(
+                        user=referrer,
+                        amount=Decimal('50'),
+                        transaction_type="referral_bonus",
+                        status="approved",
+                        note=f"Referral bonus for {deposit.user.username}'s first deposit"
+                    )
+                except User.DoesNotExist:
+                    pass  # Skip if referrer doesn't exist
 
         return Response({'message': 'Deposit request approved and wallet updated'})
 
@@ -675,17 +701,16 @@ def declare_result(request):
             wallet.winnings += bet.payout
             wallet.save()
 
-            # 🧾 Referral 1% Commission (only for allowed games and number bets)
+            # 🧾 Referral 1% Commission (only for 4 specific games: faridabad, gali, disawer, ghaziabad)
             if (
                 game.lower() in ['faridabad', 'disawer', 'ghaziabad', 'gali'] and
-                bet.bet_type == 'number' and
                 bet.user.referred_by
             ):
                 try:
                     referrer = User.objects.get(referral_code=bet.user.referred_by)
-                    commission = bet.payout * Decimal('0.01')
+                    commission = bet.payout * Decimal('0.01')  # 1% of winnings
                     ref_wallet = Wallet.objects.get(user=referrer)
-                    ref_wallet.bonus += commission
+                    ref_wallet.bonus += commission  # Add to bonus amount
                     ref_wallet.save()
 
                     ReferralCommission.objects.create(
@@ -693,6 +718,15 @@ def declare_result(request):
                         referrer=referrer,
                         bet=bet,
                         commission=commission.quantize(Decimal('0.01'))
+                    )
+                    
+                    # Create transaction record for commission
+                    Transaction.objects.create(
+                        user=referrer,
+                        amount=commission,
+                        transaction_type="referral_commission",
+                        status="approved",
+                        note=f"1% commission from {bet.user.username}'s {game} win"
                     )
                 except User.DoesNotExist:
                     pass  # skip if referrer doesn't exist

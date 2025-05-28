@@ -1,13 +1,18 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./Header.css";
+import axios from "axios";
 
 const Header = () => {
   const [sidebarActive, setSidebarActive] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const [walletData, setWalletData] = useState({
+    balance: 0,
+    winnings: 0,
+    bonus: 0
+  });
 
   const toggleSidebar = () => {
     setSidebarActive(!sidebarActive);
@@ -30,7 +35,7 @@ const Header = () => {
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("scroll", handleScroll);
-    
+
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleScroll);
@@ -42,6 +47,32 @@ const Header = () => {
     setSidebarActive(false);
     document.body.style.overflow = "auto";
   }, [location]);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const response = await axios.get("http://127.0.0.1:8000/api/user/wallet-balance/", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setWalletData({
+            balance: parseFloat(response.data.balance) || 0,
+            winnings: parseFloat(response.data.winnings) || 0,
+            bonus: parseFloat(response.data.bonus) || 0
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    };
+
+    fetchBalance();
+
+    // Refresh balance every 30 seconds
+    const interval = setInterval(fetchBalance, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const sidebarItems = [
     { name: "Admin", icon: "shield", path: "/admin" },
@@ -80,17 +111,18 @@ const Header = () => {
           </div>
 
           <div className="wallet-info">
+            
             <Link to="/wallet" className="wallet-box" aria-label="Wallet balance">
               <div className="wallet-amount">
                 <i className="fas fa-coins" />
-                <span>₹0</span>
+                <span>₹{walletData.balance.toFixed(2)}</span>
               </div>
               <div className="wallet-label">Wallet</div>
             </Link>
             <Link to="/wallet" className="wallet-box winning-box" aria-label="Winning balance">
               <div className="wallet-amount">
                 <i className="fas fa-trophy" />
-                <span>₹0</span>
+                <span>₹{walletData.winnings.toFixed(2)}</span>
               </div>
               <div className="wallet-label">Winnings</div>
             </Link>
