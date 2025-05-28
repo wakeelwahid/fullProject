@@ -2,7 +2,7 @@
 import "./MyProfile.css";
 import { Link, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../api/axiosSetup";
 
 const ProfilePage = () => {
   const navigate = useNavigate(); // navigation ke liye
@@ -27,8 +27,8 @@ const ProfilePage = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [profileRes, walletRes] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/api/profile/", { headers }),
-          axios.get("http://127.0.0.1:8000/api/balance/", { headers }),
+          axios.get("/api/profile/"),
+          axios.get("/api/balance/"),
         ]);
 
         setUser(profileRes.data);
