@@ -39,48 +39,65 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      localStorage.getItem('adminRefreshToken')
-    ) {
-      originalRequest._retry = true;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+        const adminRefreshToken = localStorage.getItem('adminRefreshToken');
+        const userRefreshToken = localStorage.getItem('userRefreshToken');
+        const refreshToken = adminRefreshToken || userRefreshToken;
 
-      if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+        if (refreshToken) {
+          originalRequest._retry = true;
+
+          if (isRefreshing) {
+            return new Promise(function (resolve, reject) {
+              failedQueue.push({ resolve, reject });
+            })
+              .then((token) => {
+                originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                return api(originalRequest);
+              })
+              .catch((err) => Promise.reject(err));
+          }
+
+          isRefreshing = true;
+
+          try {
+            const res = await axios.post('https://ef1108a0-0562-4b6b-8a98-ad9642064979-00-ey6rfojnikxd.pike.replit.dev:8000/api/token/refresh/', {
+              refresh: refreshToken,
+            });
+
+            const newAccess = res.data.access;
+
+            // Store token based on which type it was
+            if (adminRefreshToken) {
+              localStorage.setItem('adminToken', newAccess);
+            } else {
+              localStorage.setItem('userToken', newAccess);
+            }
+
+            api.defaults.headers.common['Authorization'] = 'Bearer ' + newAccess;
+            processQueue(null, newAccess);
             return api(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
+          } catch (err) {
+            processQueue(err, null);
+
+            // Clear tokens based on type
+            if (adminRefreshToken) {
+              localStorage.removeItem('adminToken');
+              localStorage.removeItem('adminRefreshToken');
+              localStorage.removeItem('adminUser');
+              window.location.href = '/admin';
+            } else {
+              localStorage.removeItem('userToken');
+              localStorage.removeItem('userRefreshToken');
+              localStorage.removeItem('user');
+              window.location.href = '/login';
+            }
+            return Promise.reject(err);
+          } finally {
+            isRefreshing = false;
+          }
+        }
       }
-
-      isRefreshing = true;
-      const refreshToken = localStorage.getItem('adminRefreshToken');
-
-      try {
-        const res = await axios.post('http://127.0.0.1:8000/api/token/refresh/', {
-          refresh: refreshToken,
-        });
-
-        const newAccess = res.data.access;
-        localStorage.setItem('adminToken', newAccess);
-        api.defaults.headers.common['Authorization'] = 'Bearer ' + newAccess;
-        processQueue(null, newAccess);
-        return api(originalRequest);
-      } catch (err) {
-        processQueue(err, null);
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminRefreshToken');
-        localStorage.removeItem('adminUser');
-        window.location.href = '/admin';
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
-    }
 
     return Promise.reject(error);
   }
