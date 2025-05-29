@@ -140,59 +140,20 @@ const UsersPanel = () => {
   });
 
   const toggleUserStatus = async (userId, currentStatus) => {
-    const user = users.find(u => u.id === userId);
-    const action = currentStatus === 'active' ? 'block' : 'unblock';
-    
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} this user?\n\nUsername: ${user.username}\nMobile: ${user.mobile}`
-    );
-    
-    if (!confirmed) return;
-
     try {
-      const response = await adminAxios.post('admin/toggle-user-status/', {
-        user_id: userId
-      });
-      
-      alert(response.data.message);
-      await fetchUsers(); // Refresh the users list
+      const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
+      // You can implement the API call here
+      console.log(`Toggle status for user ${userId} from ${currentStatus} to ${newStatus}`);
+      // After successful API call, refresh the users list
+      // await fetchUsers();
     } catch (error) {
       console.error('Error toggling user status:', error);
-      alert('Failed to update user status');
-    }
-  };
-
-  const deleteUser = async (userId) => {
-    const user = users.find(u => u.id === userId);
-    
-    const confirmed = window.confirm(
-      `⚠️ WARNING: This action cannot be undone!\n\nAre you sure you want to permanently delete this user?\n\nUsername: ${user.username}\nMobile: ${user.mobile}\n\nType 'DELETE' to confirm:`
-    );
-    
-    if (!confirmed) return;
-    
-    const finalConfirm = prompt('Type "DELETE" to confirm permanent deletion:');
-    if (finalConfirm !== 'DELETE') {
-      alert('Deletion cancelled - confirmation text did not match');
-      return;
-    }
-
-    try {
-      const response = await adminAxios.post('admin/delete-user/', {
-        user_id: userId
-      });
-      
-      alert(response.data.message);
-      await fetchUsers(); // Refresh the users list
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('Failed to delete user');
     }
   };
 
   const viewUserDetails = (userId) => {
-    const user = users.find(u => u.id === userId);
-    alert(`User Details:\n\nID: ${user.id}\nUsername: ${user.username}\nMobile: ${user.mobile}\nEmail: ${user.email}\nBalance: ₹${user.balance}\nStatus: ${user.status}\nJoined: ${new Date(user.date_joined).toLocaleDateString()}`);
+    console.log(`View details for user ${userId}`);
+    // You can implement navigation to user details page here
   };
 
   if (loading) {
@@ -450,23 +411,14 @@ const UsersPanel = () => {
                       <button 
                         className={`action-btn ${user.status === 'active' ? 'block-btn' : 'activate-btn'}`}
                         onClick={() => toggleUserStatus(user.id, user.status)}
-                        title={`${user.status === 'active' ? 'Block' : 'Unblock'} ${user.username}`}
                       >
-                        {user.status === 'active' ? 'Block' : 'Unblock'}
+                        {user.status === 'active' ? 'Block' : 'Activate'}
                       </button>
                       <button 
                         className="action-btn view-btn" 
                         onClick={() => viewUserDetails(user.id)}
-                        title={`View details for ${user.username}`}
                       >
                         View
-                      </button>
-                      <button 
-                        className="action-btn delete-btn" 
-                        onClick={() => deleteUser(user.id)}
-                        title={`Delete ${user.username}`}
-                      >
-                        Delete
                       </button>
                     </div>
                   </td>

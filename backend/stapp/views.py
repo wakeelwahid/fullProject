@@ -648,7 +648,7 @@ def admin_users_stats(request):
             # Calculate referral earnings
             referral_earnings = ReferralCommission.objects.filter(
                 referrer=user
-            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+            ).aggregate(total=Sum('commission'))['total'] or Decimal('0.00')
             
             # Calculate total earnings (winnings + referral earnings)
             total_earnings = wallet.winnings + referral_earnings
@@ -673,51 +673,5 @@ def admin_users_stats(request):
             })
         
         return Response(users_data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def admin_toggle_user_status(request):
-    try:
-        if not request.user.is_staff:
-            return Response({'error': 'Admin access required'}, status=403)
-
-        user_id = request.data.get('user_id')
-        user = User.objects.get(id=user_id)
-        
-        # Toggle user status
-        user.is_active = not user.is_active
-        user.save()
-        
-        status = 'active' if user.is_active else 'blocked'
-        return Response({
-            'message': f'User {user.username} has been {status}',
-            'status': status
-        })
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def admin_delete_user(request):
-    try:
-        if not request.user.is_staff:
-            return Response({'error': 'Admin access required'}, status=403)
-
-        user_id = request.data.get('user_id')
-        user = User.objects.get(id=user_id)
-        username = user.username
-        
-        # Delete user and related data
-        user.delete()
-        
-        return Response({
-            'message': f'User {username} has been permanently deleted'
-        })
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
