@@ -472,9 +472,61 @@ def admin_withdraw_requests(request):
         if not request.user.is_staff:
             return Response({'error': 'Admin access required'}, status=403)
 
-        requests = WithdrawRequest.objects.all().order_by('-created_at')
+        requests = WithdrawRequest.objects.filter(is_approved=False, is_rejected=False).order_by('-created_at')
         serializer = WithdrawRequestSerializer(requests, many=True)
         return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_withdraw_action(request):
+    try:
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=403)
+
+        withdraw_id = request.data.get('id')
+        action = request.data.get('action')
+
+        withdraw_request = WithdrawRequest.objects.get(id=withdraw_id)
+
+        if action == 'approve':
+            wallet = Wallet.objects.get(user=withdraw_request.user)
+            if wallet.balance < withdraw_request.amount:
+                return Response({'error': 'User has insufficient balance'}, status=400)
+            
+            # Deduct from wallet
+            wallet.balance -= withdraw_request.amount
+            wallet.save()
+            
+            # Update withdraw request
+            withdraw_request.is_approved = True
+            withdraw_request.approved_at = timezone.now()
+            withdraw_request.save()
+            
+            # Create transaction record
+            Transaction.objects.create(
+                user=withdraw_request.user,
+                transaction_type='withdraw',
+                amount=withdraw_request.amount,
+                status='approved',
+                note=f'Withdrawal approved'
+            )
+            
+        else:  # reject
+            withdraw_request.is_rejected = True
+            withdraw_request.save()
+            
+            # Create transaction record for rejected withdrawal
+            Transaction.objects.create(
+                user=withdraw_request.user,
+                transaction_type='withdraw',
+                amount=withdraw_request.amount,
+                status='rejected',
+                note=f'Withdrawal rejected'
+            )
+
+        return Response({'message': f'Withdraw request {action}d successfully'})
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 

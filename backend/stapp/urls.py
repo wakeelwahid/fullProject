@@ -17,6 +17,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('admin/bets/', AdminGroupedBetStatsAPIView.as_view(), name='admin-grouped-bets'),
     path('admin/withdraw-requests/', admin_withdraw_requests, name='admin-withdraw-requests'),
+    path('admin/withdraw-action/', admin_withdraw_action, name='admin-withdraw-action'),
     path('admin/transactions/', admin_transactions, name='admin_transactions'),  
     path('deposit-requests/', user_deposit_request, name='user_deposit_request'),
     path('admin/deposit-requests/', admin_list_deposit_requests, name='admin_list_deposit_requests'),
