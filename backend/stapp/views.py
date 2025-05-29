@@ -478,6 +478,63 @@ def admin_withdraw_requests(request):
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_withdraw_action(request):
+    try:
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=403)
+
+        withdraw_id = request.data.get('withdraw_id')
+        action = request.data.get('action')
+
+        if not withdraw_id or action not in ['approve', 'reject']:
+            return Response({'error': 'Invalid request data'}, status=400)
+
+        withdraw_request = WithdrawRequest.objects.get(id=withdraw_id)
+
+        if action == 'approve':
+            # Check if user has sufficient balance
+            wallet = Wallet.objects.get(user=withdraw_request.user)
+            if wallet.balance < withdraw_request.amount:
+                return Response({'error': 'User has insufficient balance'}, status=400)
+            
+            # Deduct amount from wallet
+            wallet.balance -= withdraw_request.amount
+            wallet.save()
+            
+            withdraw_request.is_approved = True
+            withdraw_request.approved_at = timezone.now()
+            
+            # Create transaction record for approved withdrawal
+            Transaction.objects.create(
+                user=withdraw_request.user,
+                transaction_type='withdraw',
+                amount=withdraw_request.amount,
+                status='approved',
+                note='Withdrawal approved'
+            )
+            
+        else:  # reject
+            withdraw_request.is_rejected = True
+            
+            # Create transaction record for rejected withdrawal
+            Transaction.objects.create(
+                user=withdraw_request.user,
+                transaction_type='withdraw',
+                amount=withdraw_request.amount,
+                status='rejected',
+                note='Withdrawal rejected'
+            )
+
+        withdraw_request.save()
+        return Response({'message': f'Withdrawal request {action}d successfully'})
+
+    except WithdrawRequest.DoesNotExist:
+        return Response({'error': 'Withdrawal request not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_transactions(request):

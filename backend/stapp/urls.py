@@ -1,3 +1,4 @@
+# Adding the withdraw action URL to the urlpatterns.
 from django.urls import path
 from .views import *
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -16,7 +17,8 @@ urlpatterns = [
     path('admin/token/', AdminTokenObtainPairView.as_view(), name='admin_token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('admin/bets/', AdminGroupedBetStatsAPIView.as_view(), name='admin-grouped-bets'),
-    path('admin/withdraw-requests/', admin_withdraw_requests, name='admin-withdraw-requests'),
+    path('admin/withdraw-requests/', admin_withdraw_requests, name='admin_withdraw_requests'),
+    path('admin/withdraw-action/', admin_withdraw_action, name='admin_withdraw_action'),
     path('admin/transactions/', admin_transactions, name='admin_transactions'),  
     path('deposit-requests/', user_deposit_request, name='user_deposit_request'),
     path('admin/deposit-requests/', admin_list_deposit_requests, name='admin_list_deposit_requests'),
