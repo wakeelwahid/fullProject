@@ -587,12 +587,33 @@ def admin_deposit_action(request):
 
             if action == 'approve':
                 deposit_request.status = 'approved'
+                deposit_request.approved_at = timezone.now()
+                
                 # Add money to user wallet
                 wallet = Wallet.objects.get(user=deposit_request.user)
                 wallet.balance += deposit_request.amount
                 wallet.save()
+                
+                # Create transaction record for approved deposit
+                Transaction.objects.create(
+                    user=deposit_request.user,
+                    transaction_type='deposit',
+                    amount=deposit_request.amount,
+                    status='approved',
+                    note=f'Deposit approved - UTR: {deposit_request.utr_number}'
+                )
+                
             else:
                 deposit_request.status = 'rejected'
+                
+                # Create transaction record for rejected deposit
+                Transaction.objects.create(
+                    user=deposit_request.user,
+                    transaction_type='deposit',
+                    amount=deposit_request.amount,
+                    status='rejected',
+                    note=f'Deposit rejected - UTR: {deposit_request.utr_number}'
+                )
 
             deposit_request.save()
             return Response({'message': f'Deposit request {action}d successfully'})

@@ -14,7 +14,9 @@ const DepositRequestPanel = () => {
   const fetchDeposits = async () => {
     try {
       const res = await adminAxios.get('admin/deposit-requests/');
-      setDeposits(res.data);
+      // Only show pending deposits in this panel
+      const pendingDeposits = res.data.filter(deposit => deposit.status === 'pending');
+      setDeposits(pendingDeposits);
     } catch (error) {
       console.error('Failed to fetch deposits:', error);
     } finally {
