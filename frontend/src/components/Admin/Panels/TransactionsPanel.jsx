@@ -136,7 +136,8 @@ const TransactionsPanel = () => {
         <div className="error-message">{error}</div>
       ) : (
         <div className="panel-content">
-          <table className="admin-table transaction-enhanced">
+          <div className="table-container">
+            <table className="admin-table transaction-enhanced">
             <thead>
               <tr>
                 <th>ID</th>
@@ -192,6 +193,7 @@ const TransactionsPanel = () => {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

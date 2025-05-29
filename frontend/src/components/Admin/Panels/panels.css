@@ -1411,51 +1411,380 @@ td:nth-child(7)[data-status="rejected"]::before {
   }
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 1024px) {
+  .panel {
+    padding: 15px;
+    margin: 10px 0;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .charts-container {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .chart-box {
+    height: 300px;
+  }
+}
+
 @media (max-width: 768px) {
+  .panel {
+    padding: 10px;
+    margin: 5px 0;
+  }
+
+  /* Stats and Cards */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stats-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px 15px;
+  }
+
+  .stat-number {
+    font-size: 1.4rem;
+  }
+
+  .transaction-stats {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .stat-item {
+    min-width: auto;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  /* Tables */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -10px;
+    padding: 0 10px;
+  }
+
+  .admin-table,
+  .users-table,
+  .enhanced-table {
+    font-size: 12px;
+    min-width: 800px;
+  }
+
+  .admin-table th,
+  .admin-table td,
+  .users-table th,
+  .users-table td,
+  .enhanced-table th,
+  .enhanced-table td {
+    padding: 6px 4px;
+    white-space: nowrap;
+  }
+
+  /* Filter Controls */
+  .filter-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .filter-select,
+  .search-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .range-inputs {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .range-inputs input {
+    width: 100%;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .action-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Modal Responsive */
+  .confirmation-modal {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+  }
+
+  .modal-header {
+    padding: 15px;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .modal-footer {
+    padding: 15px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cancel-btn,
+  .confirm-btn {
+    width: 100%;
+    padding: 12px;
+  }
+
+  /* Detail Rows */
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .detail-row span:first-child {
+    font-size: 12px;
+  }
+
+  /* User Details */
+  .user-details .user-info {
+    gap: 2px;
+  }
+
+  .user-details .mobile {
+    font-size: 11px;
+  }
+
+  /* Date Cell */
+  .date-cell .datetime {
+    gap: 1px;
+  }
+
+  .date-cell .time {
+    font-size: 10px;
+  }
+
+  /* Filter Section */
+  .filters-section {
+    padding: 15px;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Bet Records */
   .bet-records-summary {
     grid-template-columns: 1fr;
     gap: 10px;
   }
 
   .summary-card {
-    padding: 15px;
+    padding: 12px;
   }
 
   .summary-card h3 {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .summary-card p {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .bet-records-table {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    margin: 0 -15px;
-    padding: 0 15px;
-  }
-
-  .admin-table {
-    font-size: 13px;
-  }
-
-  .admin-table th,
-  .admin-table td {
-    padding: 8px;
-    white-space: nowrap;
-  }
-
-  .filter-controls {
-    flex-wrap: wrap;
-    gap: 8px;
+    margin: 0 -10px;
+    padding: 0 10px;
   }
 
   .filter-btn {
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: 12px;
     flex: 1;
-    min-width: 120px;
+    min-width: 100px;
+  }
+
+  /* Games Grid */
+  .games-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .game-stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .game-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 8px;
+    margin: 2px 0;
+  }
+
+  /* Further compress for very small screens */
+  .admin-table,
+  .users-table,
+  .enhanced-table {
+    font-size: 10px;
+    min-width: 600px;
+  }
+
+  .admin-table th,
+  .admin-table td,
+  .users-table th,
+  .users-table td,
+  .enhanced-table th,
+  .enhanced-table td {
+    padding: 4px 2px;
+  }
+
+  .stat-card {
+    padding: 8px 10px;
+  }
+
+  .stat-number {
+    font-size: 1.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .action-btn {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .status-badge {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .confirmation-modal {
+    width: 98%;
+  }
+
+  .bet-records-summary {
+    gap: 8px;
+  }
+
+  .summary-card {
+    padding: 10px;
+  }
+
+  .summary-card h3 {
+    font-size: 12px;
+  }
+
+  .summary-card p {
+    font-size: 14px;
+  }
+
+  .filter-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-width: 80px;
+  }
+
+  .search-input {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .filter-select {
+    padding: 8px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  /* Extra small screens */
+  .panel h2 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+
+  .admin-table,
+  .users-table,
+  .enhanced-table {
+    font-size: 9px;
+    min-width: 500px;
+  }
+
+  .admin-table th,
+  .admin-table td,
+  .users-table th,
+  .users-table td,
+  .enhanced-table th,
+  .enhanced-table td {
+    padding: 3px 1px;
+  }
+
+  .stat-number {
+    font-size: 1rem;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+  }
+
+  .action-btn {
+    padding: 2px 4px;
+    font-size: 9px;
+  }
+
+  .status-badge {
+    padding: 1px 4px;
+    font-size: 0.6rem;
+  }
+
+  .summary-card p {
+    font-size: 12px;
+  }
+
+  .filter-btn {
+    padding: 5px 8px;
+    font-size: 10px;
+    min-width: 70px;
   }
 }
 
