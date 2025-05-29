@@ -1,4 +1,5 @@
 import "./App.css";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import WhatsAppButton from "./components/WhatsAppButton/WhatsAppButton";
 import GameAnimations from "./components/GameAnimations";
@@ -30,8 +31,20 @@ import Login from "./components/pages/Auth/Login";
 import Register from "./components/pages/Auth/Register";
 import AdminDashboard from './components/Admin/AdminDashboard';
 import AdminLogin from './components/Admin/AdminLogin';
+import AgeVerification from './components/AgeVerification/AgeVerification';
+import AuthGuard from './components/AuthGuard/AuthGuard';
 
 function App() {
+  const [ageVerified, setAgeVerified] = useState(false);
+
+  const handleAgeConfirm = () => {
+    setAgeVerified(true);
+  };
+
+  if (!ageVerified) {
+    return <AgeVerification onConfirm={handleAgeConfirm} />;
+  }
+
   return (
     <Router>
       <Routes>
@@ -40,7 +53,7 @@ function App() {
         <Route
           path="/*"
           element={
-            <>
+            <AuthGuard>
               <GameAnimations />
               <Header />
               <Routes>
@@ -72,7 +85,7 @@ function App() {
               </Routes>
               <Footer />
               <WhatsAppButton />
-            </>
+            </AuthGuard>
           }
         />
       </Routes>

@@ -74,12 +74,23 @@ const Header = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const isAuthenticated = () => {
+    return localStorage.getItem('token') !== null;
+  };
+
+  const handleProtectedRoute = (path, e) => {
+    const publicRoutes = ['/', '/terms', '/refund', '/privacy', '/game-rules'];
+    
+    if (!publicRoutes.includes(path) && !isAuthenticated()) {
+      e.preventDefault();
+      alert('Please login or register to access this feature.');
+      return;
+    }
+  };
+
   const sidebarItems = [
-    { name: "Admin", icon: "shield", path: "/admin" },
     { name: "Home", icon: "home", path: "/" },
     { name: "Play", icon: "play", path: "/play" },
-    { name: "Login", icon: "sign-in-alt", path: "/login" },
-    { name: "Register", icon: "user-plus", path: "/register" },
     { name: "My Profile", icon: "user", path: "/profile" },
     { name: "My Wallet", icon: "wallet", path: "/wallet" },
     { name: "Game History", icon: "history", path: "/history" },
@@ -150,12 +161,49 @@ const Header = () => {
                   key={index}
                   to={item.path}
                   className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
-                  onClick={toggleSidebar}
+                  onClick={(e) => {
+                    handleProtectedRoute(item.path, e);
+                    toggleSidebar();
+                  }}
                 >
                   <i className={`fas fa-${item.icon} me-3`} />
                   {item.name}
                 </Link>
               ))}
+              {!isAuthenticated() && (
+                <>
+                  <Link
+                    to="/login"
+                    className="sidebar-item"
+                    onClick={toggleSidebar}
+                  >
+                    <i className="fas fa-sign-in-alt me-3" />
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="sidebar-item"
+                    onClick={toggleSidebar}
+                  >
+                    <i className="fas fa-user-plus me-3" />
+                    Register
+                  </Link>
+                </>
+              )}
+              {isAuthenticated() && (
+                <button
+                  className="sidebar-item logout-btn"
+                  onClick={() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('user');
+                    window.location.reload();
+                  }}
+                >
+                  <i className="fas fa-sign-out-alt me-3" />
+                  Logout
+                </button>
+              )}
             </div>
           </div>
         </>

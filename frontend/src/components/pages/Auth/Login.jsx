@@ -13,6 +13,32 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    // Form validation
+    if (!mobile.trim()) {
+      setError("Mobile number is required");
+      return;
+    }
+
+    if (mobile.length !== 10) {
+      setError("Mobile number must be exactly 10 digits");
+      return;
+    }
+
+    if (!/^[0-9]{10}$/.test(mobile)) {
+      setError("Mobile number must contain only digits");
+      return;
+    }
+
+    if (!password.trim()) {
+      setError("Password is required");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/login/", {
         mobile,
@@ -24,7 +50,13 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(response.data.user));
       navigate("/wallet");
     } catch (err) {
-      setError("Invalid mobile or password.");
+      if (err.response?.status === 401) {
+        setError("Invalid mobile number or password.");
+      } else if (err.response?.status === 400) {
+        setError("Please check your mobile number and password.");
+      } else {
+        setError("Login failed. Please try again later.");
+      }
     }
   };
 

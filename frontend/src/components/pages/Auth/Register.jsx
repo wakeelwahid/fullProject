@@ -29,14 +29,80 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Form validation
+    if (!formData.username.trim()) {
+      setError("Username is required");
+      return;
+    }
+
+    if (formData.username.length < 3) {
+      setError("Username must be at least 3 characters long");
+      return;
+    }
+
+    if (formData.username.length > 50) {
+      setError("Username must be less than 50 characters");
+      return;
+    }
+
+    if (!formData.mobile.trim()) {
+      setError("Mobile number is required");
+      return;
+    }
+
+    if (formData.mobile.length !== 10) {
+      setError("Mobile number must be exactly 10 digits");
+      return;
+    }
+
+    if (!/^[0-9]{10}$/.test(formData.mobile)) {
+      setError("Mobile number must contain only digits");
+      return;
+    }
+
+    if (formData.mobile.startsWith('0')) {
+      setError("Mobile number cannot start with 0");
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setError("Password is required");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    if (formData.password.length > 50) {
+      setError("Password must be less than 50 characters");
+      return;
+    }
+
+    if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(formData.password)) {
+      setError("Password must contain at least one letter and one number");
+      return;
+    }
+
+    if (!formData.confirmPassword.trim()) {
+      setError("Please confirm your password");
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setError("Passwords don't match");
+      return;
+    }
+
+    if (formData.referral_code && formData.referral_code.length < 6) {
+      setError("Referral code must be at least 6 characters if provided");
       return;
     }
 
     try {
       setError(""); // clear previous errors
-      await axios.post("http://127.0.0.1:8000/api/register/", {
+      const response = await axios.post("http://127.0.0.1:8000/api/register/", {
         username: formData.username.trim(),
         mobile: formData.mobile.trim(),
         email: formData.email?.trim() || "",
@@ -50,16 +116,18 @@ const Register = () => {
       console.error("Registration error:", err.response?.data || err.message);
       const data = err.response?.data;
 
-      if (data?.mobile) {
-        setError(data.mobile[0]);
-      } else if (data?.username) {
-        setError(data.username[0]);
-      } else if (typeof data === "string") {
-        setError(data);
-      } else if (data?.non_field_errors) {
-        setError(data.non_field_errors[0]);
+      if (err.response?.status === 400) {
+        if (data?.mobile) {
+          setError("Mobile number already exists. Please use a different number.");
+        } else if (data?.referred_by) {
+          setError("Invalid referral code. Please check and try again.");
+        } else if (data?.username) {
+          setError(data.username[0]);
+        } else {
+          setError("Registration failed. Please check your details.");
+        }
       } else {
-        setError("Registration failed. Please try again.");
+        setError("Registration failed. Please try again later.");
       }
     }
   };

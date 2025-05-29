@@ -333,3 +333,21 @@ body {
   font-weight: bold;
   font-size: 0.9rem;
 }
+.sidebar-item:last-child {
+  border-bottom: none;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: #ff6b6b !important;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 107, 107, 0.1) !important;
+  color: #ff5252 !important;
+}

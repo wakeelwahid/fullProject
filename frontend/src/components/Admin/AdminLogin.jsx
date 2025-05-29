@@ -34,7 +34,7 @@ const AdminLogin = () => {
       navigate("/admin/dashboard");
     } catch (err) {
       console.error("Login error:", err.response?.data || err.message);
-      
+
       if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else if (err.response?.data?.non_field_errors) {
