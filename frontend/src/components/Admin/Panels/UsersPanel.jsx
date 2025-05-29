@@ -9,7 +9,7 @@ const UsersPanel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Filter states
+  // Enhanced filter states
   const [filters, setFilters] = useState({
     minBalance: '',
     maxBalance: '',
@@ -19,8 +19,14 @@ const UsersPanel = () => {
     maxWithdraw: '',
     minEarning: '',
     maxEarning: '',
+    minTodayDeposit: '',
+    maxTodayDeposit: '',
+    minTodayWithdraw: '',
+    maxTodayWithdraw: '',
     minReferrals: '',
     maxReferrals: '',
+    minReferralEarnings: '',
+    maxReferralEarnings: '',
     status: 'all'
   });
 
@@ -59,8 +65,14 @@ const UsersPanel = () => {
       maxWithdraw: '',
       minEarning: '',
       maxEarning: '',
+      minTodayDeposit: '',
+      maxTodayDeposit: '',
+      minTodayWithdraw: '',
+      maxTodayWithdraw: '',
       minReferrals: '',
       maxReferrals: '',
+      minReferralEarnings: '',
+      maxReferralEarnings: '',
       status: 'all'
     });
   };
@@ -70,7 +82,10 @@ const UsersPanel = () => {
     const totalDeposit = parseFloat(user.total_deposit);
     const totalWithdraw = parseFloat(user.total_withdraw);
     const totalEarning = parseFloat(user.total_earning);
+    const todayDeposit = parseFloat(user.today_deposit);
+    const todayWithdraw = parseFloat(user.today_withdraw);
     const totalReferrals = user.total_referrals;
+    const referralEarnings = parseFloat(user.referral_earnings);
 
     // Status filter
     if (filters.status !== 'all' && user.status !== filters.status) {
@@ -81,21 +96,33 @@ const UsersPanel = () => {
     if (filters.minBalance && balance < parseFloat(filters.minBalance)) return false;
     if (filters.maxBalance && balance > parseFloat(filters.maxBalance)) return false;
 
-    // Deposit filters
+    // Total Deposit filters
     if (filters.minDeposit && totalDeposit < parseFloat(filters.minDeposit)) return false;
     if (filters.maxDeposit && totalDeposit > parseFloat(filters.maxDeposit)) return false;
 
-    // Withdraw filters
+    // Total Withdraw filters
     if (filters.minWithdraw && totalWithdraw < parseFloat(filters.minWithdraw)) return false;
     if (filters.maxWithdraw && totalWithdraw > parseFloat(filters.maxWithdraw)) return false;
 
-    // Earning filters
+    // Total Earning filters
     if (filters.minEarning && totalEarning < parseFloat(filters.minEarning)) return false;
     if (filters.maxEarning && totalEarning > parseFloat(filters.maxEarning)) return false;
+
+    // Today Deposit filters
+    if (filters.minTodayDeposit && todayDeposit < parseFloat(filters.minTodayDeposit)) return false;
+    if (filters.maxTodayDeposit && todayDeposit > parseFloat(filters.maxTodayDeposit)) return false;
+
+    // Today Withdraw filters
+    if (filters.minTodayWithdraw && todayWithdraw < parseFloat(filters.minTodayWithdraw)) return false;
+    if (filters.maxTodayWithdraw && todayWithdraw > parseFloat(filters.maxTodayWithdraw)) return false;
 
     // Referrals filters
     if (filters.minReferrals && totalReferrals < parseInt(filters.minReferrals)) return false;
     if (filters.maxReferrals && totalReferrals > parseInt(filters.maxReferrals)) return false;
+
+    // Referral Earnings filters
+    if (filters.minReferralEarnings && referralEarnings < parseFloat(filters.minReferralEarnings)) return false;
+    if (filters.maxReferralEarnings && referralEarnings > parseFloat(filters.maxReferralEarnings)) return false;
 
     return true;
   };
@@ -111,6 +138,23 @@ const UsersPanel = () => {
 
     return searchMatch && applyFilters(user);
   });
+
+  const toggleUserStatus = async (userId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
+      // You can implement the API call here
+      console.log(`Toggle status for user ${userId} from ${currentStatus} to ${newStatus}`);
+      // After successful API call, refresh the users list
+      // await fetchUsers();
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+    }
+  };
+
+  const viewUserDetails = (userId) => {
+    console.log(`View details for user ${userId}`);
+    // You can implement navigation to user details page here
+  };
 
   if (loading) {
     return (
@@ -152,7 +196,7 @@ const UsersPanel = () => {
         />
       </div>
 
-      {/* Filters Section */}
+      {/* Enhanced Filters Section */}
       <div className="filters-section">
         <h3>Filters</h3>
         <div className="filters-grid">
@@ -229,6 +273,42 @@ const UsersPanel = () => {
           </div>
 
           <div className="filter-group">
+            <label>Today Deposit Range (₹)</label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minTodayDeposit}
+                onChange={(e) => handleFilterChange('minTodayDeposit', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxTodayDeposit}
+                onChange={(e) => handleFilterChange('maxTodayDeposit', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Today Withdraw Range (₹)</label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minTodayWithdraw}
+                onChange={(e) => handleFilterChange('minTodayWithdraw', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxTodayWithdraw}
+                onChange={(e) => handleFilterChange('maxTodayWithdraw', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
             <label>Referrals Range</label>
             <div className="range-inputs">
               <input
@@ -242,6 +322,24 @@ const UsersPanel = () => {
                 placeholder="Max"
                 value={filters.maxReferrals}
                 onChange={(e) => handleFilterChange('maxReferrals', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Referral Earnings Range (₹)</label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minReferralEarnings}
+                onChange={(e) => handleFilterChange('minReferralEarnings', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxReferralEarnings}
+                onChange={(e) => handleFilterChange('maxReferralEarnings', e.target.value)}
               />
             </div>
           </div>
@@ -264,66 +362,71 @@ const UsersPanel = () => {
         </div>
       </div>
 
-      {/* Users Table */}
+      {/* Enhanced Users Table */}
       <div className="table-container">
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Username</th>
-              <th>Mobile</th>
-              <th>Email</th>
-              <th>Balance</th>
-              <th>Total Deposit</th>
-              <th>Total Withdraw</th>
-              <th>Total Earning</th>
-              <th>Today Deposit</th>
-              <th>Today Withdraw</th>
-              <th>Total Referrals</th>
-              <th>Referral Earnings</th>
-              <th>Status</th>
-              <th>Joined</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.username}</td>
-                <td>{user.mobile}</td>
-                <td>{user.email}</td>
-                <td>₹{parseFloat(user.balance).toFixed(2)}</td>
-                <td>₹{parseFloat(user.total_deposit).toFixed(2)}</td>
-                <td>₹{parseFloat(user.total_withdraw).toFixed(2)}</td>
-                <td>₹{parseFloat(user.total_earning).toFixed(2)}</td>
-                <td>₹{parseFloat(user.today_deposit).toFixed(2)}</td>
-                <td>₹{parseFloat(user.today_withdraw).toFixed(2)}</td>
-                <td>{user.total_referrals}</td>
-                <td>₹{parseFloat(user.referral_earnings).toFixed(2)}</td>
-                <td>
-                  <span className={`status ${user.status}`}>
-                    {user.status}
-                  </span>
-                </td>
-                <td>{new Date(user.date_joined).toLocaleDateString()}</td>
-                <td>
-                  <div className="action-buttons">
-                    <button 
-                      className={`status-btn ${user.status === 'active' ? 'block' : 'activate'}`}
-                      onClick={() => toggleUserStatus(user.id, user.status)}
-                    >
-                      {user.status === 'active' ? 'Block' : 'Activate'}
-                    </button>
-                    <button className="view-btn" onClick={() => viewUserDetails(user.id)}>
-                      View
-                    </button>
-                  </div>
-                </td>
+        <div className="table-scroll">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Mobile</th>
+                <th>Email</th>
+                <th>Balance</th>
+                <th>Total Deposit</th>
+                <th>Total Withdraw</th>
+                <th>Total Earning</th>
+                <th>Today Deposit</th>
+                <th>Today Withdraw</th>
+                <th>Total Referrals</th>
+                <th>Referral Earnings</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.id}</td>
+                  <td className="username-cell">{user.username}</td>
+                  <td>{user.mobile}</td>
+                  <td>{user.email || 'N/A'}</td>
+                  <td className="amount-cell">₹{parseFloat(user.balance).toFixed(2)}</td>
+                  <td className="amount-cell">₹{parseFloat(user.total_deposit).toFixed(2)}</td>
+                  <td className="amount-cell">₹{parseFloat(user.total_withdraw).toFixed(2)}</td>
+                  <td className="amount-cell">₹{parseFloat(user.total_earning).toFixed(2)}</td>
+                  <td className="amount-cell">₹{parseFloat(user.today_deposit).toFixed(2)}</td>
+                  <td className="amount-cell">₹{parseFloat(user.today_withdraw).toFixed(2)}</td>
+                  <td className="referral-cell">{user.total_referrals}</td>
+                  <td className="amount-cell">₹{parseFloat(user.referral_earnings).toFixed(2)}</td>
+                  <td>
+                    <span className={`status-badge ${user.status}`}>
+                      {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="date-cell">{new Date(user.date_joined).toLocaleDateString()}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        className={`action-btn ${user.status === 'active' ? 'block-btn' : 'activate-btn'}`}
+                        onClick={() => toggleUserStatus(user.id, user.status)}
+                      >
+                        {user.status === 'active' ? 'Block' : 'Activate'}
+                      </button>
+                      <button 
+                        className="action-btn view-btn" 
+                        onClick={() => viewUserDetails(user.id)}
+                      >
+                        View
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {filteredUsers.length === 0 && (
@@ -331,18 +434,39 @@ const UsersPanel = () => {
           <p>No users found matching the current filters.</p>
         </div>
       )}
+
+      {/* Summary Statistics */}
+      <div className="summary-section">
+        <h3>Summary Statistics</h3>
+        <div className="stats-grid-detailed">
+          <div className="stat-item">
+            <span>Total Users:</span>
+            <span>{filteredUsers.length}</span>
+          </div>
+          <div className="stat-item">
+            <span>Total Balance:</span>
+            <span>₹{filteredUsers.reduce((sum, user) => sum + parseFloat(user.balance), 0).toFixed(2)}</span>
+          </div>
+          <div className="stat-item">
+            <span>Total Deposits:</span>
+            <span>₹{filteredUsers.reduce((sum, user) => sum + parseFloat(user.total_deposit), 0).toFixed(2)}</span>
+          </div>
+          <div className="stat-item">
+            <span>Total Withdrawals:</span>
+            <span>₹{filteredUsers.reduce((sum, user) => sum + parseFloat(user.total_withdraw), 0).toFixed(2)}</span>
+          </div>
+          <div className="stat-item">
+            <span>Total Earnings:</span>
+            <span>₹{filteredUsers.reduce((sum, user) => sum + parseFloat(user.total_earning), 0).toFixed(2)}</span>
+          </div>
+          <div className="stat-item">
+            <span>Total Referrals:</span>
+            <span>{filteredUsers.reduce((sum, user) => sum + user.total_referrals, 0)}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
-
-  function toggleUserStatus(userId, currentStatus) {
-    // Implement user status toggle
-    console.log(`Toggle status for user ${userId}, current: ${currentStatus}`);
-  }
-
-  function viewUserDetails(userId) {
-    // Implement view user details
-    console.log(`View details for user ${userId}`);
-  }
 };
 
 export default UsersPanel;
