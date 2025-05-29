@@ -2,3 +2,27 @@ modules = ["nodejs-20", "web", "python-3.12"]
 
 [nix]
 channel = "stable-24_05"
+
+[workflows]
+runButton = "Run Full Stack"
+
+[[workflows.workflow]]
+name = "Run Full Stack"
+author = 43260354
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && python manage.py runserver 0.0.0.0:8000"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm run dev"
+
+[[ports]]
+localPort = 5173
+externalPort = 5173
+
+[[ports]]
+localPort = 8000
+externalPort = 80

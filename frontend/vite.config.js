@@ -7,6 +7,6 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    allowedHosts: ['66de33cc-12f7-4b7c-9f57-e6d0c1c6dcb1-00-274hzvlk4e5m1.pike.replit.dev']
+    allowedHosts: ['bbc0843b-f2ca-4013-b426-d8157c16036a-00-2p14m5q4t9hfe.sisko.replit.dev']
   }
 })
