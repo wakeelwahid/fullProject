@@ -1,127 +1,278 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import adminAxios from '../../utils/adminAxios';
 import './panels.css';
 
 const UsersPanel = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [users] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      mobile: "9876543210",
-      balance: 5000,
-      totalDeposit: 15000,
-      totalWithdraw: 10000,
-      totalEarning: 8000,
-      todayDeposit: 1000,
-      todayWithdraw: 500,
-      totalReferrals: 5,
-      referralEarnings: 2500,
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "Alice Smith",
-      mobile: "9876543211",
-      balance: 7500,
-      totalDeposit: 25000,
-      totalWithdraw: 17500,
-      totalEarning: 12000,
-      todayDeposit: 2000,
-      todayWithdraw: 1500,
-      totalReferrals: 8,
-      referralEarnings: 4000,
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "Bob Wilson",
-      mobile: "9876543212",
-      balance: 3000,
-      totalDeposit: 10000,
-      totalWithdraw: 7000,
-      totalEarning: 5000,
-      todayDeposit: 500,
-      todayWithdraw: 0,
-      totalReferrals: 3,
-      referralEarnings: 1500,
-      status: "blocked"
-    },
-    {
-      id: 4,
-      name: "Emma Davis",
-      mobile: "9876543213",
-      balance: 10000,
-      totalDeposit: 35000,
-      totalWithdraw: 25000,
-      totalEarning: 15000,
-      todayDeposit: 3000,
-      todayWithdraw: 2000,
-      totalReferrals: 10,
-      referralEarnings: 5000,
-      status: "active"
-    },
-    {
-      id: 5,
-      name: "Michael Brown",
-      mobile: "9876543214",
-      balance: 6000,
-      totalDeposit: 20000,
-      totalWithdraw: 14000,
-      totalEarning: 9000,
-      todayDeposit: 1500,
-      todayWithdraw: 1000,
-      totalReferrals: 6,
-      referralEarnings: 3000,
-      status: "active"
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Filter states
+  const [filters, setFilters] = useState({
+    minBalance: '',
+    maxBalance: '',
+    minDeposit: '',
+    maxDeposit: '',
+    minWithdraw: '',
+    maxWithdraw: '',
+    minEarning: '',
+    maxEarning: '',
+    minReferrals: '',
+    maxReferrals: '',
+    status: 'all'
+  });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await adminAxios.get('admin/users-stats/');
+      setUsers(response.data);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setError('Failed to fetch users data');
+    } finally {
+      setLoading(false);
     }
-  ]);
-
-  const handleBlockUser = (userId) => {
-    console.log("Blocking user:", userId);
   };
 
-  const handleUnblockUser = (userId) => {
-    console.log("Unblocking user:", userId);
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const handleRemoveUser = (userId) => {
-    console.log("Removing user:", userId);
+  const clearFilters = () => {
+    setFilters({
+      minBalance: '',
+      maxBalance: '',
+      minDeposit: '',
+      maxDeposit: '',
+      minWithdraw: '',
+      maxWithdraw: '',
+      minEarning: '',
+      maxEarning: '',
+      minReferrals: '',
+      maxReferrals: '',
+      status: 'all'
+    });
   };
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.mobile.includes(searchTerm) ||
-    user.balance.toString().includes(searchTerm) ||
-    user.totalDeposit.toString().includes(searchTerm) ||
-    user.totalWithdraw.toString().includes(searchTerm) ||
-    user.totalEarning.toString().includes(searchTerm) ||
-    user.todayDeposit.toString().includes(searchTerm) ||
-    user.todayWithdraw.toString().includes(searchTerm) ||
-    user.totalReferrals.toString().includes(searchTerm) ||
-    user.referralEarnings.toString().includes(searchTerm) ||
-    user.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const applyFilters = (user) => {
+    const balance = parseFloat(user.balance);
+    const totalDeposit = parseFloat(user.total_deposit);
+    const totalWithdraw = parseFloat(user.total_withdraw);
+    const totalEarning = parseFloat(user.total_earning);
+    const totalReferrals = user.total_referrals;
+
+    // Status filter
+    if (filters.status !== 'all' && user.status !== filters.status) {
+      return false;
+    }
+
+    // Balance filters
+    if (filters.minBalance && balance < parseFloat(filters.minBalance)) return false;
+    if (filters.maxBalance && balance > parseFloat(filters.maxBalance)) return false;
+
+    // Deposit filters
+    if (filters.minDeposit && totalDeposit < parseFloat(filters.minDeposit)) return false;
+    if (filters.maxDeposit && totalDeposit > parseFloat(filters.maxDeposit)) return false;
+
+    // Withdraw filters
+    if (filters.minWithdraw && totalWithdraw < parseFloat(filters.minWithdraw)) return false;
+    if (filters.maxWithdraw && totalWithdraw > parseFloat(filters.maxWithdraw)) return false;
+
+    // Earning filters
+    if (filters.minEarning && totalEarning < parseFloat(filters.minEarning)) return false;
+    if (filters.maxEarning && totalEarning > parseFloat(filters.maxEarning)) return false;
+
+    // Referrals filters
+    if (filters.minReferrals && totalReferrals < parseInt(filters.minReferrals)) return false;
+    if (filters.maxReferrals && totalReferrals > parseInt(filters.maxReferrals)) return false;
+
+    return true;
+  };
+
+  const filteredUsers = users.filter(user => {
+    // Search filter
+    const searchMatch = [
+      user.username,
+      user.mobile,
+      user.email,
+      user.status
+    ].join(' ').toLowerCase().includes(searchTerm.toLowerCase());
+
+    return searchMatch && applyFilters(user);
+  });
+
+  if (loading) {
+    return (
+      <div className="panel">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading users data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="panel">
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+          <button onClick={fetchUsers} className="retry-btn">Retry</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="panel">
-      <h2>Users Management</h2>
+      <div className="panel-header">
+        <h2>Users Management ({filteredUsers.length} users)</h2>
+        <button onClick={fetchUsers} className="refresh-btn">Refresh</button>
+      </div>
+
+      {/* Search Bar */}
       <div className="search-bar">
         <input
           type="text"
-          placeholder="Search by name or mobile..."
+          placeholder="Search by username, mobile, email, or status..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
         />
       </div>
-      <div className="panel-content">
-        <table className="admin-table">
+
+      {/* Filters Section */}
+      <div className="filters-section">
+        <h3>Filters</h3>
+        <div className="filters-grid">
+          <div className="filter-group">
+            <label>Balance Range (₹)</label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minBalance}
+                onChange={(e) => handleFilterChange('minBalance', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxBalance}
+                onChange={(e) => handleFilterChange('maxBalance', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Total Deposit Range (₹)</label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minDeposit}
+                onChange={(e) => handleFilterChange('minDeposit', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxDeposit}
+                onChange={(e) => handleFilterChange('maxDeposit', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Total Withdraw Range (₹)</label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minWithdraw}
+                onChange={(e) => handleFilterChange('minWithdraw', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxWithdraw}
+                onChange={(e) => handleFilterChange('maxWithdraw', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Total Earning Range (₹)</label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minEarning}
+                onChange={(e) => handleFilterChange('minEarning', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxEarning}
+                onChange={(e) => handleFilterChange('maxEarning', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Referrals Range</label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minReferrals}
+                onChange={(e) => handleFilterChange('minReferrals', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxReferrals}
+                onChange={(e) => handleFilterChange('maxReferrals', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Status</label>
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="filter-actions">
+          <button onClick={clearFilters} className="clear-filters-btn">Clear Filters</button>
+        </div>
+      </div>
+
+      {/* Users Table */}
+      <div className="table-container">
+        <table className="users-table">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Name</th>
+              <th>Username</th>
               <th>Mobile</th>
+              <th>Email</th>
               <th>Balance</th>
               <th>Total Deposit</th>
               <th>Total Withdraw</th>
@@ -131,54 +282,67 @@ const UsersPanel = () => {
               <th>Total Referrals</th>
               <th>Referral Earnings</th>
               <th>Status</th>
+              <th>Joined</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map(user => (
+            {filteredUsers.map((user) => (
               <tr key={user.id}>
                 <td>{user.id}</td>
-                <td>{user.name}</td>
+                <td>{user.username}</td>
                 <td>{user.mobile}</td>
-                <td>₹{user.balance}</td>
-                <td>₹{user.totalDeposit}</td>
-                <td>₹{user.totalWithdraw}</td>
-                <td>₹{user.totalEarning}</td>
-                <td>₹{user.todayDeposit}</td>
-                <td>₹{user.todayWithdraw}</td>
-                <td>{user.totalReferrals}</td>
-                <td>₹{user.referralEarnings}</td>
-                <td>{user.status}</td>
-                <td className="action-buttons">
-                  {user.status === 'active' ? (
+                <td>{user.email}</td>
+                <td>₹{parseFloat(user.balance).toFixed(2)}</td>
+                <td>₹{parseFloat(user.total_deposit).toFixed(2)}</td>
+                <td>₹{parseFloat(user.total_withdraw).toFixed(2)}</td>
+                <td>₹{parseFloat(user.total_earning).toFixed(2)}</td>
+                <td>₹{parseFloat(user.today_deposit).toFixed(2)}</td>
+                <td>₹{parseFloat(user.today_withdraw).toFixed(2)}</td>
+                <td>{user.total_referrals}</td>
+                <td>₹{parseFloat(user.referral_earnings).toFixed(2)}</td>
+                <td>
+                  <span className={`status ${user.status}`}>
+                    {user.status}
+                  </span>
+                </td>
+                <td>{new Date(user.date_joined).toLocaleDateString()}</td>
+                <td>
+                  <div className="action-buttons">
                     <button 
-                      className="action-btn delete" 
-                      onClick={() => handleBlockUser(user.id)}
+                      className={`status-btn ${user.status === 'active' ? 'block' : 'activate'}`}
+                      onClick={() => toggleUserStatus(user.id, user.status)}
                     >
-                      Block
+                      {user.status === 'active' ? 'Block' : 'Activate'}
                     </button>
-                  ) : (
-                    <button 
-                      className="action-btn" 
-                      onClick={() => handleUnblockUser(user.id)}
-                    >
-                      Unblock
+                    <button className="view-btn" onClick={() => viewUserDetails(user.id)}>
+                      View
                     </button>
-                  )}
-                  <button 
-                    className="action-btn delete" 
-                    onClick={() => handleRemoveUser(user.id)}
-                  >
-                    Remove
-                  </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {filteredUsers.length === 0 && (
+        <div className="no-data">
+          <p>No users found matching the current filters.</p>
+        </div>
+      )}
     </div>
   );
+
+  function toggleUserStatus(userId, currentStatus) {
+    // Implement user status toggle
+    console.log(`Toggle status for user ${userId}, current: ${currentStatus}`);
+  }
+
+  function viewUserDetails(userId) {
+    // Implement view user details
+    console.log(`View details for user ${userId}`);
+  }
 };
 
 export default UsersPanel;

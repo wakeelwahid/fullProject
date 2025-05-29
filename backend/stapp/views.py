@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import models
+from django.db.models import Sum
 from .models import *
 import json
 import random
@@ -597,5 +598,80 @@ def game_status(request):
                 {'name': 'ghaziabad', 'status': 'active'}
             ]
         })
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_users_stats(request):
+    try:
+        if not request.user.is_staff:
+            return Response({'error': 'Admin access required'}, status=403)
+
+        users = User.objects.all()
+        users_data = []
+        
+        for user in users:
+            try:
+                wallet = Wallet.objects.get(user=user)
+            except Wallet.DoesNotExist:
+                wallet = Wallet.objects.create(user=user)
+            
+            # Calculate total deposits
+            total_deposits = DepositRequest.objects.filter(
+                user=user, status='approved'
+            ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+            
+            # Calculate total withdrawals
+            total_withdrawals = WithdrawRequest.objects.filter(
+                user=user, is_approved=True
+            ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+            
+            # Calculate today's deposits
+            today = timezone.now().date()
+            today_deposits = DepositRequest.objects.filter(
+                user=user, status='approved',
+                created_at__date=today
+            ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+            
+            # Calculate today's withdrawals
+            today_withdrawals = WithdrawRequest.objects.filter(
+                user=user, is_approved=True,
+                created_at__date=today
+            ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+            
+            # Calculate total referrals - count unique referred users
+            total_referrals = ReferralCommission.objects.filter(
+                referrer=user
+            ).values('referred_user').distinct().count()
+            
+            # Calculate referral earnings
+            referral_earnings = ReferralCommission.objects.filter(
+                referrer=user
+            ).aggregate(total=Sum('commission'))['total'] or Decimal('0.00')
+            
+            # Calculate total earnings (winnings + referral earnings)
+            total_earnings = wallet.winnings + referral_earnings
+            
+            users_data.append({
+                'id': user.id,
+                'username': user.username,
+                'mobile': user.mobile,
+                'email': user.email or 'N/A',
+                'balance': str(wallet.balance),
+                'bonus': str(wallet.bonus),
+                'winnings': str(wallet.winnings),
+                'total_deposit': str(total_deposits),
+                'total_withdraw': str(total_withdrawals),
+                'total_earning': str(total_earnings),
+                'today_deposit': str(today_deposits),
+                'today_withdraw': str(today_withdrawals),
+                'total_referrals': total_referrals,
+                'referral_earnings': str(referral_earnings),
+                'status': 'active' if user.is_active else 'blocked',
+                'date_joined': user.date_joined
+            })
+        
+        return Response(users_data)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
