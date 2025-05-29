@@ -1,8 +1,7 @@
-// utils/adminAxios.js
 import axios from 'axios';
 
 const adminAxios = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/',
+  baseURL: `${window.location.protocol}//${window.location.hostname}:8000/api/`,
 });
 
 adminAxios.interceptors.request.use((config) => {
