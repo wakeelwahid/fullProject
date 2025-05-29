@@ -361,15 +361,6 @@ def withdraw_request(request):
             amount=amount
         )
 
-        # Create transaction record for pending withdrawal
-        Transaction.objects.create(
-            user=request.user,
-            transaction_type='withdraw',
-            amount=amount,
-            status='pending',
-            note='Withdrawal request submitted'
-        )
-
         return Response({'message': 'Withdraw request submitted successfully'})
     except Exception as e:
         return Response({'error': str(e)}, status=500)
@@ -494,10 +485,10 @@ def admin_transactions(request):
         if not request.user.is_staff:
             return Response({'error': 'Admin access required'}, status=403)
 
-        # Get only Transaction records - these contain complete transaction history
-        transaction_records = Transaction.objects.all().order_by('-created_at')
         transactions = []
         
+        # Get all Transaction records
+        transaction_records = Transaction.objects.all().order_by('-created_at')
         for txn in transaction_records:
             transactions.append({
                 'id': txn.id,
@@ -512,6 +503,42 @@ def admin_transactions(request):
                 'note': txn.note or ''
             })
         
+        # Get all DepositRequest records
+        deposit_requests = DepositRequest.objects.all().order_by('-created_at')
+        for deposit in deposit_requests:
+            transactions.append({
+                'id': f'dep_{deposit.id}',
+                'user': {
+                    'username': deposit.user.username,
+                    'mobile': deposit.user.mobile
+                },
+                'transaction_type': 'deposit',
+                'amount': str(deposit.amount),
+                'status': deposit.status,
+                'created_at': deposit.created_at.isoformat(),
+                'note': f'UTR: {deposit.utr_number}'
+            })
+        
+        # Get all WithdrawRequest records
+        withdraw_requests = WithdrawRequest.objects.all().order_by('-created_at')
+        for withdraw in withdraw_requests:
+            status = 'approved' if withdraw.is_approved else 'rejected' if withdraw.is_rejected else 'pending'
+            transactions.append({
+                'id': f'with_{withdraw.id}',
+                'user': {
+                    'username': withdraw.user.username,
+                    'mobile': withdraw.user.mobile
+                },
+                'transaction_type': 'withdraw',
+                'amount': str(withdraw.amount),
+                'status': status,
+                'created_at': withdraw.created_at.isoformat(),
+                'note': ''
+            })
+        
+        # Sort all transactions by created_at in descending order
+        transactions.sort(key=lambda x: x['created_at'], reverse=True)
+        
         return Response(transactions)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
@@ -523,16 +550,6 @@ def user_deposit_request(request):
         serializer = DepositRequestSerializer(data=request.data)
         if serializer.is_valid():
             deposit_request = serializer.save(user=request.user)
-            
-            # Create transaction record for pending deposit
-            Transaction.objects.create(
-                user=request.user,
-                transaction_type='deposit',
-                amount=deposit_request.amount,
-                status='pending',
-                note=f'Deposit request submitted - UTR: {deposit_request.utr_number}'
-            )
-            
             return Response({
                 'message': 'Deposit request submitted successfully',
                 'request_id': deposit_request.id
@@ -574,26 +591,8 @@ def admin_deposit_action(request):
                 wallet = Wallet.objects.get(user=deposit_request.user)
                 wallet.balance += deposit_request.amount
                 wallet.save()
-                
-                # Create transaction record for approved deposit
-                Transaction.objects.create(
-                    user=deposit_request.user,
-                    transaction_type='deposit',
-                    amount=deposit_request.amount,
-                    status='approved',
-                    note=f'Deposit approved - UTR: {deposit_request.utr_number}'
-                )
             else:
                 deposit_request.status = 'rejected'
-                
-                # Create transaction record for rejected deposit
-                Transaction.objects.create(
-                    user=deposit_request.user,
-                    transaction_type='deposit',
-                    amount=deposit_request.amount,
-                    status='rejected',
-                    note=f'Deposit rejected - UTR: {deposit_request.utr_number}'
-                )
 
             deposit_request.save()
             return Response({'message': f'Deposit request {action}d successfully'})
@@ -609,61 +608,6 @@ def referral_earnings(request):
         commissions = ReferralCommission.objects.filter(referrer=request.user)
         serializer = ReferralCommissionSerializer(commissions, many=True)
         return Response(serializer.data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def admin_withdraw_action(request):
-    try:
-        if not request.user.is_staff:
-            return Response({'error': 'Admin access required'}, status=403)
-
-        withdraw_id = request.data.get('withdraw_id')
-        action = request.data.get('action')  # 'approve' or 'reject'
-
-        if not withdraw_id or not action:
-            return Response({'error': 'withdraw_id and action are required'}, status=400)
-
-        withdraw_request = WithdrawRequest.objects.get(id=withdraw_id)
-
-        if action == 'approve':
-            # Deduct money from user wallet
-            wallet = Wallet.objects.get(user=withdraw_request.user)
-            if wallet.balance >= withdraw_request.amount:
-                wallet.balance -= withdraw_request.amount
-                wallet.save()
-                
-                withdraw_request.is_approved = True
-                withdraw_request.approved_at = timezone.now()
-                
-                # Create transaction record for approved withdrawal
-                Transaction.objects.create(
-                    user=withdraw_request.user,
-                    transaction_type='withdraw',
-                    amount=withdraw_request.amount,
-                    status='approved',
-                    note='Withdrawal approved'
-                )
-            else:
-                return Response({'error': 'Insufficient balance'}, status=400)
-        else:
-            withdraw_request.is_rejected = True
-            
-            # Create transaction record for rejected withdrawal
-            Transaction.objects.create(
-                user=withdraw_request.user,
-                transaction_type='withdraw',
-                amount=withdraw_request.amount,
-                status='rejected',
-                note='Withdrawal rejected'
-            )
-
-        withdraw_request.save()
-        return Response({'message': f'Withdraw request {action}d successfully'})
-
-    except WithdrawRequest.DoesNotExist:
-        return Response({'error': 'Withdraw request not found'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
