@@ -485,18 +485,61 @@ def admin_transactions(request):
         if not request.user.is_staff:
             return Response({'error': 'Admin access required'}, status=403)
 
-        transactions = Transaction.objects.all().order_by('-created_at')
-        data = []
-        for txn in transactions:
-            data.append({
+        transactions = []
+        
+        # Get all Transaction records
+        transaction_records = Transaction.objects.all().order_by('-created_at')
+        for txn in transaction_records:
+            transactions.append({
                 'id': txn.id,
-                'user': txn.user.username,
-                'type': txn.transaction_type,
+                'user': {
+                    'username': txn.user.username,
+                    'mobile': txn.user.mobile
+                },
+                'transaction_type': txn.transaction_type,
                 'amount': str(txn.amount),
                 'status': txn.status,
-                'created_at': txn.created_at
+                'created_at': txn.created_at.isoformat(),
+                'note': txn.note or ''
             })
-        return Response(data)
+        
+        # Get all DepositRequest records
+        deposit_requests = DepositRequest.objects.all().order_by('-created_at')
+        for deposit in deposit_requests:
+            transactions.append({
+                'id': f'dep_{deposit.id}',
+                'user': {
+                    'username': deposit.user.username,
+                    'mobile': deposit.user.mobile
+                },
+                'transaction_type': 'deposit',
+                'amount': str(deposit.amount),
+                'status': deposit.status,
+                'created_at': deposit.created_at.isoformat(),
+                'note': f'UTR: {deposit.utr_number}'
+            })
+        
+        # Get all WithdrawRequest records
+        withdraw_requests = WithdrawRequest.objects.all().order_by('-created_at')
+        for withdraw in withdraw_requests:
+            status = 'approved' if withdraw.is_approved else 'rejected' if withdraw.is_rejected else 'pending'
+            transactions.append({
+                'id': f'with_{withdraw.id}',
+                'user': {
+                    'username': withdraw.user.username,
+                    'mobile': withdraw.user.mobile
+                },
+                'transaction_type': 'withdraw',
+                'amount': str(withdraw.amount),
+                'status': status,
+                'created_at': withdraw.created_at.isoformat(),
+                'note': ''
+            })
+        
+        # Sort all transactions by created_at in descending order
+        transactions.sort(key=lambda x: x['created_at'], reverse=True)
+        
+        return Response(transactions)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
