@@ -24,10 +24,12 @@ const DepositRequestPanel = () => {
 
   const handleAction = async (id, action) => {
     try {
-      await adminAxios.post('admin/deposit-action/', { deposit_id: id, action });
+      const response = await adminAxios.post('admin/deposit-action/', { deposit_id: id, action });
+      alert(response.data.message || `Deposit ${action}d successfully`);
       fetchDeposits(); // refresh list after action
     } catch (error) {
       console.error(`Failed to ${action} deposit:`, error);
+      alert(`Failed to ${action} deposit`);
     }
   };
 
