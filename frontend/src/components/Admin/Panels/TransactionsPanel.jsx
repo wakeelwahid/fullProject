@@ -34,10 +34,6 @@ const TransactionsPanel = () => {
     };
 
     fetchTransactions();
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchTransactions, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const filteredTransactions = transactions.filter((transaction) => {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import adminAxios from '../../utils/adminAxios';
 import './panels.css';
@@ -7,11 +6,6 @@ const WithdrawRequestPanel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showPopup, setShowPopup] = useState(false);
-  const [selectedWithdraw, setSelectedWithdraw] = useState(null);
-  const [actionType, setActionType] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchWithdrawals();
@@ -28,29 +22,13 @@ const WithdrawRequestPanel = () => {
     }
   };
 
-  const showActionPopup = (withdraw, action) => {
-    setSelectedWithdraw(withdraw);
-    setActionType(action);
-    setShowPopup(true);
-  };
-
-  const confirmAction = async () => {
+  const handleAction = async (id, action) => {
     try {
-      await adminAxios.post('admin/withdraw-action/', { 
-        id: selectedWithdraw.id, 
-        action: actionType 
-      });
-      
-      setSuccessMessage(`Withdrawal ${actionType}d successfully for ${selectedWithdraw.user?.username} (${selectedWithdraw.user?.mobile})`);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 4000);
-      
+      await adminAxios.post('admin/withdraw-requests/', { id, action });
       fetchWithdrawals(); // refresh list
-      setShowPopup(false);
     } catch (error) {
-      console.error(`Failed to ${actionType} withdrawal:`, error);
+      console.error(`Failed to ${action} withdrawal:`, error);
       alert(`Error: ${error.response?.data?.error || 'Something went wrong'}`);
-      setShowPopup(false);
     }
   };
 
@@ -64,147 +42,79 @@ const WithdrawRequestPanel = () => {
       userInfo.includes(searchTermLower) ||
       withdrawal.amount.toString().includes(searchTerm) ||
       date.includes(searchTerm) ||
-      time.toLowerCase().includes(searchTermLower)
+      time.toLowerCase().includes(searchTermLower) ||
+      (withdrawal.status && withdrawal.status.toLowerCase().includes(searchTermLower))
     );
   });
-
-  const getStats = () => {
-    const totalAmount = withdrawals.reduce((sum, w) => sum + parseFloat(w.amount), 0);
-    return {
-      totalRequests: withdrawals.length,
-      totalAmount: totalAmount.toFixed(2)
-    };
-  };
-
-  const stats = getStats();
 
   return (
     <div className="panel">
       <h2>Withdrawal Requests</h2>
-      
-      <div className="withdraw-stats">
-        <div className="stat-item">
-          <span>Pending Requests</span>
-          <span className="stat-number">{stats.totalRequests}</span>
-        </div>
-        <div className="stat-item">
-          <span>Total Amount</span>
-          <span className="stat-number">₹{stats.totalAmount}</span>
-        </div>
-      </div>
-
       <div className="search-bar">
         <input
           type="text"
-          placeholder="Search by user, mobile, amount..."
+          placeholder="Search by user, amount, or status..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
         />
       </div>
 
-      {showSuccess && (
-        <div className="success-popup">
-          {successMessage}
-        </div>
-      )}
-
       {loading ? (
-        <div className="loading-message">Loading withdrawal requests...</div>
+        <p>Loading...</p>
       ) : (
         <div className="panel-content">
-          <table className="admin-table withdraw-enhanced">
+          <table className="admin-table">
             <thead>
               <tr>
                 <th>ID</th>
-                <th>User Details</th>
+                <th>User</th>
+                <th>Mobile</th>
                 <th>Amount</th>
-                <th>Request Time</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredWithdrawals.length > 0 ? (
-                filteredWithdrawals.map(withdrawal => (
-                  <tr key={withdrawal.id}>
-                    <td className="id-cell">#{withdrawal.id}</td>
-                    <td className="user-details">
-                      <div className="user-info">
-                        <div className="username">{withdrawal.user?.username}</div>
-                        <div className="mobile">{withdrawal.user?.mobile}</div>
-                      </div>
-                    </td>
-                    <td className="amount-cell amount-negative">₹{withdrawal.amount}</td>
-                    <td className="time-cell">
-                      <div className="date">{new Date(withdrawal.created_at).toLocaleDateString()}</div>
-                      <div className="time">{new Date(withdrawal.created_at).toLocaleTimeString()}</div>
-                    </td>
-                    <td>
-                      <div className='action-buttons'>
+              {filteredWithdrawals.map(withdrawal => (
+                <tr key={withdrawal.id}>
+                  <td>{withdrawal.id}</td>
+                  <td className="user-cell">{withdrawal.user?.username}</td>
+                  <td>{withdrawal.user?.mobile}</td>
+                  <td className="amount-cell">₹{withdrawal.amount}</td>
+                  <td>{new Date(withdrawal.created_at).toLocaleDateString()}</td>
+                  <td>{new Date(withdrawal.created_at).toLocaleTimeString()}</td>
+                  <td className={`status-cell ${withdrawal.status}`}>
+                    {withdrawal.is_approved ? 'approved' : 
+                     withdrawal.is_rejected ? 'rejected' : 'pending'}
+                  </td>
+                  <td>
+                    {!withdrawal.is_approved && !withdrawal.is_rejected && (
+                      <div className='set-btn'>
                         <button 
                           className="action-btn approve" 
-                          onClick={() => showActionPopup(withdrawal, 'approve')}
+                          onClick={() => handleAction(withdrawal.id, 'approve')}
                         >
-                          ✓ Approve
+                          Approve
                         </button>
                         <button 
                           className="action-btn reject" 
-                          onClick={() => showActionPopup(withdrawal, 'reject')}
+                          onClick={() => handleAction(withdrawal.id, 'reject')}
                         >
-                          ✗ Reject
+                          Reject
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="no-results">
-                    No pending withdrawal requests
+                    )}
+                    {(withdrawal.is_approved || withdrawal.is_rejected) && (
+                      <span>Processed</span>
+                    )}
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {showPopup && selectedWithdraw && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h3>Confirm {actionType === 'approve' ? 'Approval' : 'Rejection'}</h3>
-            <div className="popup-details">
-              <div className="detail-row">
-                <span>User:</span>
-                <span>{selectedWithdraw.user?.username}</span>
-              </div>
-              <div className="detail-row">
-                <span>Mobile:</span>
-                <span>{selectedWithdraw.user?.mobile}</span>
-              </div>
-              <div className="detail-row">
-                <span>Amount:</span>
-                <span className="amount-highlight">₹{selectedWithdraw.amount}</span>
-              </div>
-            </div>
-            <p className="popup-message">
-              Are you sure you want to {actionType} this withdrawal request?
-            </p>
-            <div className="popup-buttons">
-              <button 
-                className={`popup-btn ${actionType === 'approve' ? 'confirm-btn' : 'reject-btn'}`}
-                onClick={confirmAction}
-              >
-                Yes, {actionType === 'approve' ? 'Approve' : 'Reject'}
-              </button>
-              <button 
-                className="popup-btn cancel-btn" 
-                onClick={() => setShowPopup(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
