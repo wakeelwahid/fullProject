@@ -156,12 +156,17 @@ def get_user_profile(request):
             user.referral_code = generate_referral_code(user.username, user.mobile)
             user.save()
 
+        profile_image_url = None
+        if user.profile_image:
+            profile_image_url = request.build_absolute_uri(user.profile_image.url)
+            
         return Response({
             'id': user.id,
             'username': user.username,
             'mobile': user.mobile,
             'email': user.email,
             'referral_code': user.referral_code,
+            'profile_image': profile_image_url,
             'date_joined': user.date_joined
         })
     except Exception as e:

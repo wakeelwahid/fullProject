@@ -103,7 +103,8 @@ const ProfilePage = () => {
               ) : (
                 <div className="user-avatar-initials">
                   {user.username ? 
-                    user.username.split(' ').map(name => name.charAt(0).toUpperCase()).join('').slice(0, 2) 
+                    user.username.trim().split(/\s+/).map(name => name.charAt(0).toUpperCase()).join('').slice(0, 2) ||
+                    user.username.charAt(0).toUpperCase() + (user.username.charAt(1) || '').toUpperCase()
                     : 'U'
                   }
                 </div>
