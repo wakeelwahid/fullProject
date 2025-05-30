@@ -22,6 +22,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import RegisterSerializer, MobileTokenObtainPairSerializer, AdminTokenSerializer, WithdrawRequestSerializer, DepositRequestSerializer, DepositActionSerializer, ReferralCommissionSerializer
 from django.utils import timezone
 from datetime import timedelta
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 
 def generate_referral_code(username, mobile):
@@ -498,14 +500,14 @@ def admin_withdraw_action(request):
             wallet = Wallet.objects.get(user=withdraw_request.user)
             if wallet.balance < withdraw_request.amount:
                 return Response({'error': 'User has insufficient balance'}, status=400)
-            
+
             # Deduct amount from wallet
             wallet.balance -= withdraw_request.amount
             wallet.save()
-            
+
             withdraw_request.is_approved = True
             withdraw_request.approved_at = timezone.now()
-            
+
             # Create transaction record for approved withdrawal
             Transaction.objects.create(
                 user=withdraw_request.user,
@@ -514,10 +516,10 @@ def admin_withdraw_action(request):
                 status='approved',
                 note='Withdrawal approved'
             )
-            
+
         else:  # reject
             withdraw_request.is_rejected = True
-            
+
             # Create transaction record for rejected withdrawal
             Transaction.objects.create(
                 user=withdraw_request.user,
@@ -543,7 +545,7 @@ def admin_transactions(request):
             return Response({'error': 'Admin access required'}, status=403)
 
         transactions = []
-        
+
         # Get all Transaction records
         transaction_records = Transaction.objects.all().order_by('-created_at')
         for txn in transaction_records:
@@ -559,7 +561,7 @@ def admin_transactions(request):
                 'created_at': txn.created_at.isoformat(),
                 'note': txn.note or ''
             })
-        
+
         # Get all DepositRequest records
         deposit_requests = DepositRequest.objects.all().order_by('-created_at')
         for deposit in deposit_requests:
@@ -575,7 +577,7 @@ def admin_transactions(request):
                 'created_at': deposit.created_at.isoformat(),
                 'note': f'UTR: {deposit.utr_number}'
             })
-        
+
         # Get all WithdrawRequest records
         withdraw_requests = WithdrawRequest.objects.all().order_by('-created_at')
         for withdraw in withdraw_requests:
@@ -592,10 +594,10 @@ def admin_transactions(request):
                 'created_at': withdraw.created_at.isoformat(),
                 'note': ''
             })
-        
+
         # Sort all transactions by created_at in descending order
         transactions.sort(key=lambda x: x['created_at'], reverse=True)
-        
+
         return Response(transactions)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
@@ -645,12 +647,12 @@ def admin_deposit_action(request):
             if action == 'approve':
                 deposit_request.status = 'approved'
                 deposit_request.approved_at = timezone.now()
-                
+
                 # Add money to user wallet
                 wallet = Wallet.objects.get(user=deposit_request.user)
                 wallet.balance += deposit_request.amount
                 wallet.save()
-                
+
                 # Create transaction record for approved deposit
                 Transaction.objects.create(
                     user=deposit_request.user,
@@ -659,10 +661,10 @@ def admin_deposit_action(request):
                     status='approved',
                     note=f'Deposit approved - UTR: {deposit_request.utr_number}'
                 )
-                
+
             else:
                 deposit_request.status = 'rejected'
-                
+
                 # Create transaction record for rejected deposit
                 Transaction.objects.create(
                     user=deposit_request.user,
@@ -731,49 +733,49 @@ def admin_users_stats(request):
 
         users = User.objects.all()
         users_data = []
-        
+
         for user in users:
             try:
                 wallet = Wallet.objects.get(user=user)
             except Wallet.DoesNotExist:
                 wallet = Wallet.objects.create(user=user)
-            
+
             # Calculate total deposits
             total_deposits = DepositRequest.objects.filter(
                 user=user, status='approved'
             ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
-            
+
             # Calculate total withdrawals
             total_withdrawals = WithdrawRequest.objects.filter(
                 user=user, is_approved=True
             ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
-            
+
             # Calculate today's deposits
             today = timezone.now().date()
             today_deposits = DepositRequest.objects.filter(
                 user=user, status='approved',
                 created_at__date=today
             ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
-            
+
             # Calculate today's withdrawals
             today_withdrawals = WithdrawRequest.objects.filter(
                 user=user, is_approved=True,
                 created_at__date=today
             ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
-            
+
             # Calculate total referrals - count unique referred users
             total_referrals = ReferralCommission.objects.filter(
                 referrer=user
             ).values('referred_user').distinct().count()
-            
+
             # Calculate referral earnings
             referral_earnings = ReferralCommission.objects.filter(
                 referrer=user
             ).aggregate(total=Sum('commission'))['total'] or Decimal('0.00')
-            
+
             # Calculate total earnings (winnings + referral earnings)
             total_earnings = wallet.winnings + referral_earnings
-            
+
             users_data.append({
                 'id': user.id,
                 'username': user.username,
@@ -792,7 +794,62 @@ def admin_users_stats(request):
                 'status': 'active' if user.is_active else 'blocked',
                 'date_joined': user.date_joined
             })
-        
+
         return Response(users_data)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    user = request.user
+    profile_image_url = None
+    if user.profile_image:
+        profile_image_url = request.build_absolute_uri(user.profile_image.url)
+
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'mobile': user.mobile,
+        'email': user.email,
+        'referral_code': user.referral_code,
+        'referred_by': user.referred_by,
+        'profile_image': profile_image_url
+    })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_profile_image(request):
+    try:
+        if 'profile_image' not in request.FILES:
+            return Response({'error': 'No image file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        image_file = request.FILES['profile_image']
+
+        # Validate file type
+        if not image_file.content_type.startswith('image/'):
+            return Response({'error': 'Invalid file type. Only images are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate file size (max 5MB)
+        if image_file.size > 5 * 1024 * 1024:
+            return Response({'error': 'File too large. Maximum size is 5MB.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+
+        # Delete old image if exists
+        if user.profile_image:
+            user.profile_image.delete()
+
+        # Save new image
+        user.profile_image = image_file
+        user.save()
+
+        profile_image_url = request.build_absolute_uri(user.profile_image.url)
+
+        return Response({
+            'message': 'Profile image uploaded successfully',
+            'profile_image': profile_image_url
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

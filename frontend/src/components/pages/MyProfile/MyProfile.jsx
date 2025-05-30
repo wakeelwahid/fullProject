@@ -20,6 +20,30 @@ const ProfilePage = () => {
     winnings: "0.00",
   });
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('profile_image', file);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post("/api/upload-profile-image/", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      setUser(prev => ({ ...prev, profile_image: response.data.profile_image }));
+      alert("Profile image updated successfully!");
+    } catch (error) {
+      console.error("Failed to upload image:", error);
+      alert("Failed to upload image. Please try again.");
+    }
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -69,11 +93,37 @@ const ProfilePage = () => {
             <i className="fas fa-user"></i> Personal Information
           </h2>
           <div className="user-info">
-            <img
-              src="https://randomuser.me/api/portraits/men/32.jpg"
-              alt="User"
-              className="user-avatar"
+            <div className="user-avatar-container">
+              {user.profile_image ? (
+                <img
+                  src={user.profile_image}
+                  alt="User"
+                  className="user-avatar"
+                />
+              ) : (
+                <div className="user-avatar-initials">
+                  {user.username ? 
+                    user.username.split(' ').map(name => name.charAt(0).toUpperCase()).join('').slice(0, 2) 
+                    : 'U'
+                  }
+                </div>
+              )}
+            </div>
+            <div className="user-details"></div>
+          </div>
+          <div className="profile-image-upload">
+            <label htmlFor="profileImageInput" className="upload-btn">
+              <i className="fas fa-camera"></i> Upload Photo
+            </label>
+            <input
+              type="file"
+              id="profileImageInput"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleImageUpload}
             />
+          </div>
+          <div className="user-details-section">
             <div className="user-details">
               <div className="user-name">{user.username}</div>
               <div className="user-id">ID: SK789456123</div>
