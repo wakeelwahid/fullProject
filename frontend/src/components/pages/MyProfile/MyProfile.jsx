@@ -109,7 +109,7 @@ const ProfilePage = () => {
                 </div>
               )}
               <div className="camera-overlay" onClick={() => document.getElementById('profileImageInput').click()}>
-                <i className="fas fa-camera"></i>
+                <i className="fas fa-pencil-alt"></i>
               </div>
             </div>
             <div className="user-details"></div>
