@@ -108,21 +108,19 @@ const ProfilePage = () => {
                   }
                 </div>
               )}
+              <div className="camera-overlay" onClick={() => document.getElementById('profileImageInput').click()}>
+                <i className="fas fa-camera"></i>
+              </div>
             </div>
             <div className="user-details"></div>
           </div>
-          <div className="profile-image-upload">
-            <label htmlFor="profileImageInput" className="upload-btn">
-              <i className="fas fa-camera"></i> Upload Photo
-            </label>
-            <input
-              type="file"
-              id="profileImageInput"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={handleImageUpload}
-            />
-          </div>
+          <input
+            type="file"
+            id="profileImageInput"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleImageUpload}
+          />
           <div className="user-details-section">
             <div className="user-details">
               <div className="user-name">{user.username}</div>
