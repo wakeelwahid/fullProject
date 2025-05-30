@@ -8,5 +8,15 @@ urlpatterns = [
     path('', include('stapp.urls')),
 ]
 
+# Add media URL serving
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Also add API prefix to stapp URLs
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('stapp.urls')),
+]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

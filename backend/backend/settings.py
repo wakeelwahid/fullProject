@@ -26,24 +26,32 @@ SECRET_KEY = 'django-insecure-ct%(g*h0_p1-rt2h+g4oc4y!$tipv_&8!^nht7t1rh07_25r3)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'ec6f988c-d038-4682-ac07-7a507891b5b1-00-rc6in6agvjnm.sisko.replit.dev']
+
+# CORS settings  
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://ec6f988c-d038-4682-ac07-7a507891b5b1-00-rc6in6agvjnm.sisko.replit.dev",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Application definition
 
 INSTALLED_APPS = [
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
     'stapp',
-
 ]
 
 MIDDLEWARE = [
@@ -55,8 +63,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-
 ]
 
 REST_FRAMEWORK = {
@@ -65,13 +71,6 @@ REST_FRAMEWORK = {
     )
 }
 
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-]
-
-CORS_ALLOW_ALL_ORIGINS = True
 
 
 ROOT_URLCONF = 'backend.urls'
