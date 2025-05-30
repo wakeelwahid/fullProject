@@ -20,29 +20,7 @@ const ProfilePage = () => {
     winnings: "0.00",
   });
 
-  const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('profile_image', file);
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post("/api/upload-profile-image/", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      setUser(prev => ({ ...prev, profile_image: response.data.profile_image }));
-      alert("Profile image updated successfully!");
-    } catch (error) {
-      console.error("Failed to upload image:", error);
-      alert("Failed to upload image. Please try again.");
-    }
-  };
+  
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -120,19 +98,10 @@ const ProfilePage = () => {
                   }
                 </div>
               )}
-              <div className="camera-overlay" onClick={() => document.getElementById('profileImageInput').click()}>
-                <i className="fas fa-pencil-alt"></i>
-              </div>
             </div>
             <div className="user-details"></div>
           </div>
-          <input
-            type="file"
-            id="profileImageInput"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleImageUpload}
-          />
+          
           <div className="user-details-section">
             <div className="user-details">
               <div className="user-name">{user.username}</div>
