@@ -9,7 +9,7 @@ const Transactions = () => {
     const fetchTransactions = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://127.0.0.1:8000/api/transactions/", {
+        const res = await axios.get("http://127.0.0.1:8000/api/transaction-history/", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -18,8 +18,8 @@ const Transactions = () => {
         // Format the API data to your table structure
         const formatted = res.data.map((tx, index) => ({
           id: index + 1,
-          date: new Date(tx.date).toLocaleDateString(),
-          time: new Date(tx.date).toLocaleTimeString(),
+          date: new Date(tx.created_at).toLocaleDateString(),
+          time: new Date(tx.created_at).toLocaleTimeString(),
           type: tx.type,
           amount:
             (tx.type === "deposit" || tx.type === "win" || tx.type === "bonus"
