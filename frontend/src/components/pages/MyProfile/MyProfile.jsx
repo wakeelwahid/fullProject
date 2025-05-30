@@ -103,8 +103,19 @@ const ProfilePage = () => {
               ) : (
                 <div className="user-avatar-initials">
                   {user.username ? 
-                    user.username.trim().split(/\s+/).map(name => name.charAt(0).toUpperCase()).join('').slice(0, 2) ||
-                    user.username.charAt(0).toUpperCase() + (user.username.charAt(1) || '').toUpperCase()
+                    (() => {
+                      const words = user.username.trim().split(/\s+/);
+                      if (words.length >= 2) {
+                        // If multiple words, take first letter of first two words
+                        return words[0].charAt(0).toUpperCase() + words[1].charAt(0).toUpperCase();
+                      } else {
+                        // If single word, take first two characters
+                        const singleWord = words[0];
+                        return singleWord.length >= 2 
+                          ? singleWord.charAt(0).toUpperCase() + singleWord.charAt(1).toUpperCase()
+                          : singleWord.charAt(0).toUpperCase();
+                      }
+                    })()
                     : 'U'
                   }
                 </div>
