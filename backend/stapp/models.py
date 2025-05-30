@@ -9,7 +9,7 @@ class User(AbstractUser):
     email = models.EmailField(blank=True, null=True)
     referral_code = models.CharField(max_length=20,unique=True, blank=True, null=True)
     referred_by = models.CharField(max_length=20, blank=True, null=True)
-    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+   
 
 
     USERNAME_FIELD = 'mobile'

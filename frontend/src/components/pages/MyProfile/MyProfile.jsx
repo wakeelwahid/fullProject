@@ -20,8 +20,6 @@ const ProfilePage = () => {
     winnings: "0.00",
   });
 
-  
-
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -72,36 +70,31 @@ const ProfilePage = () => {
           </h2>
           <div className="user-info">
             <div className="user-avatar-container">
-              {user.profile_image ? (
-                <img
-                  src={user.profile_image}
-                  alt="User"
-                  className="user-avatar"
-                />
-              ) : (
-                <div className="user-avatar-initials">
-                  {user.username ? 
-                    (() => {
+              <div className="user-avatar-initials">
+                {user.username
+                  ? (() => {
                       const words = user.username.trim().split(/\s+/);
                       if (words.length >= 2) {
                         // If multiple words, take first letter of first two words
-                        return words[0].charAt(0).toUpperCase() + words[1].charAt(0).toUpperCase();
+                        return (
+                          words[0].charAt(0).toUpperCase() +
+                          words[1].charAt(0).toUpperCase()
+                        );
                       } else {
                         // If single word, take first two characters
                         const singleWord = words[0];
-                        return singleWord.length >= 2 
-                          ? singleWord.charAt(0).toUpperCase() + singleWord.charAt(1).toUpperCase()
+                        return singleWord.length >= 2
+                          ? singleWord.charAt(0).toUpperCase() +
+                              singleWord.charAt(1).toUpperCase()
                           : singleWord.charAt(0).toUpperCase();
                       }
                     })()
-                    : 'U'
-                  }
-                </div>
-              )}
+                  : "U"}
+              </div>
             </div>
             <div className="user-details"></div>
           </div>
-          
+
           <div className="user-details-section">
             <div className="user-details">
               <div className="user-name">{user.username}</div>
@@ -152,24 +145,29 @@ const ProfilePage = () => {
           <div className="referral-code">
             <div>
               <div className="code-label">Your Referral Code:</div>
-              <div className="code-text">{user.referral_code || "Loading..."}</div>
+              <div className="code-text">
+                {user.referral_code || "Loading..."}
+              </div>
             </div>
-            <button 
+            <button
               className="copy-btn"
               onClick={() => {
                 const code = user.referral_code || "";
-                navigator.clipboard.writeText(code).then(() => {
-                  alert("Referral code copied!");
-                }).catch(() => {
-                  // Fallback for older browsers
-                  const textArea = document.createElement("textarea");
-                  textArea.value = code;
-                  document.body.appendChild(textArea);
-                  textArea.select();
-                  document.execCommand('copy');
-                  document.body.removeChild(textArea);
-                  alert("Referral code copied!");
-                });
+                navigator.clipboard
+                  .writeText(code)
+                  .then(() => {
+                    alert("Referral code copied!");
+                  })
+                  .catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement("textarea");
+                    textArea.value = code;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(textArea);
+                    alert("Referral code copied!");
+                  });
               }}
             >
               <i className="fas fa-copy"></i> COPY CODE

@@ -29,5 +29,5 @@ urlpatterns = [
     path('admin/users-stats/', admin_users_stats, name='admin_users_stats'),
     path('game-status/', game_status, name='game-status'),
     path('get-profile/', get_user_profile, name='get_profile'),
-    path('upload-profile-image/', upload_profile_image, name='upload_profile_image'),
+    
 ]

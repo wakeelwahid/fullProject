@@ -819,12 +819,10 @@ def get_profile(request):
         'email': user.email,
         'referral_code': user.referral_code,
         'referred_by': user.referred_by,
-        'profile_image': profile_image_url
+       
     })
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def upload_profile_image(request):
+
     try:
         if 'profile_image' not in request.FILES:
             return Response({'error': 'No image file provided'}, status=status.HTTP_400_BAD_REQUEST)
