@@ -611,17 +611,56 @@ def admin_transactions(request):
 @permission_classes([IsAuthenticated])
 def user_deposit_request(request):
     try:
-        serializer = DepositRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            deposit_request = serializer.save(user=request.user)
-            return Response({
-                'message': 'Deposit request submitted successfully',
-                'request_id': deposit_request.id
-            }, status=201)
-        return Response(serializer.errors, status=400)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        # Get and validate data
+        data = request.data
+        amount = Decimal(str(data.get('amount', 0)))
+        utr_number = data.get('utr_number', '').strip()
+        payment_method = data.get('payment_method', 'UPI').strip()
 
+        # Validate amount
+        if amount < Decimal('100.00'):
+            return Response({'error': 'Minimum deposit amount is ₹100'}, status=400)
+
+        # Validate UTR number (12 digits)
+        if not (utr_number.isdigit() and len(utr_number) == 12):
+            return Response({'error': 'UTR number must be 12 digits'}, status=400)
+
+        # Create deposit request
+        deposit = DepositRequest.objects.create(
+            user=request.user,
+            amount=amount,
+            utr_number=utr_number,
+            payment_method=payment_method,
+            status='pending'
+        )
+
+        # Create transaction record
+        Transaction.objects.create(
+            user=request.user,
+            transaction_type='deposit',
+            amount=amount,
+            status='pending',
+            note=f'Deposit request - UTR: {utr_number}'
+        )
+
+        return Response({
+            'message': 'Deposit request submitted for admin approval',
+            'request_id': deposit.id,
+            'status': 'pending'
+        }, status=201)
+
+    except Exception as e:
+        # Log the error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Deposit request error: {str(e)}", exc_info=True)
+        
+        return Response({
+            'error': 'Failed to process deposit request',
+            'details': str(e)
+        }, status=500)
+    
+    
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_list_deposit_requests(request):
@@ -638,54 +677,77 @@ def admin_list_deposit_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def admin_deposit_action(request):
+    if not request.user.is_staff:
+        return Response({'error': 'Admin access required'}, status=403)
+
     try:
-        if not request.user.is_staff:
-            return Response({'error': 'Admin access required'}, status=403)
+        deposit_id = request.data.get('deposit_id')
+        action = request.data.get('action')
+        admin_note = request.data.get('note', '')
 
-        serializer = DepositActionSerializer(data=request.data)
-        if serializer.is_valid():
-            deposit_id = serializer.validated_data['deposit_id']
-            action = serializer.validated_data['action']
+        if not deposit_id or action not in ['approve', 'reject']:
+            return Response({'error': 'Invalid request data'}, status=400)
 
-            deposit_request = DepositRequest.objects.get(id=deposit_id)
+        deposit = DepositRequest.objects.get(id=deposit_id)
+        
+        if deposit.status != 'pending':
+            return Response({'error': 'Deposit request already processed'}, status=400)
 
-            if action == 'approve':
-                deposit_request.status = 'approved'
-                deposit_request.approved_at = timezone.now()
+        if action == 'approve':
+            # Approve deposit
+            deposit.status = 'approved'
+            deposit.approved_at = timezone.now()
+            deposit.approved_by = request.user
+            deposit.save()
 
-                # Add money to user wallet
-                wallet = Wallet.objects.get(user=deposit_request.user)
-                wallet.balance += deposit_request.amount
-                wallet.save()
+            # Add funds to wallet
+            wallet = Wallet.objects.get(user=deposit.user)
+            wallet.balance += deposit.amount
+            wallet.save()
 
-                # Create transaction record for approved deposit
-                Transaction.objects.create(
-                    user=deposit_request.user,
-                    transaction_type='deposit',
-                    amount=deposit_request.amount,
-                    status='approved',
-                    note=f'Deposit approved - UTR: {deposit_request.utr_number}'
-                )
+            # Update transaction record
+            Transaction.objects.filter(
+                user=deposit.user,
+                amount=deposit.amount,
+                status='pending'
+            ).update(
+                status='approved',
+                note=f'Deposit approved - UTR: {deposit.utr_number}'
+            )
 
-            else:
-                deposit_request.status = 'rejected'
+            return Response({
+                'message': 'Deposit approved successfully',
+                'new_balance': str(wallet.balance)
+            })
 
-                # Create transaction record for rejected deposit
-                Transaction.objects.create(
-                    user=deposit_request.user,
-                    transaction_type='deposit',
-                    amount=deposit_request.amount,
-                    status='rejected',
-                    note=f'Deposit rejected - UTR: {deposit_request.utr_number}'
-                )
+        else:
+            # Reject deposit
+            deposit.status = 'rejected'
+            deposit.rejected_at = timezone.now()
+            deposit.rejected_by = request.user
+            deposit.admin_note = admin_note
+            deposit.save()
 
-            deposit_request.save()
-            return Response({'message': f'Deposit request {action}d successfully'})
+            # Update transaction record
+            Transaction.objects.filter(
+                user=deposit.user,
+                amount=deposit.amount,
+                status='pending'
+            ).update(
+                status='rejected',
+                note=f'Deposit rejected: {admin_note}'
+            )
 
-        return Response(serializer.errors, status=400)
+            return Response({
+                'message': 'Deposit rejected',
+                'reason': admin_note
+            })
+
+    except DepositRequest.DoesNotExist:
+        return Response({'error': 'Deposit request not found'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
-
+    
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def referral_earnings(request):
@@ -822,6 +884,17 @@ def get_profile(request):
        
     })
 
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .serializers import UserProfileSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+    serializer = UserProfileSerializer(request.user)
+    return Response(serializer.data)
 
     try:
         if 'profile_image' not in request.FILES:

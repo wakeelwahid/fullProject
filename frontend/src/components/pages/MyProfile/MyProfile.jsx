@@ -32,7 +32,7 @@ const ProfilePage = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [profileRes, walletRes] = await Promise.all([
-          axios.get("/api/profile/", { headers }),
+          axios.get("/api/profile/", { headers }), // This now gives full user info including username
           axios.get("/api/balance/", { headers }),
         ]);
 
@@ -75,21 +75,17 @@ const ProfilePage = () => {
                   ? (() => {
                       const words = user.username.trim().split(/\s+/);
                       if (words.length >= 2) {
-                        // If multiple words, take first letter of first two words
                         return (
                           words[0].charAt(0).toUpperCase() +
                           words[1].charAt(0).toUpperCase()
                         );
+                      } else if (words.length === 1 && words[0].length > 0) {
+                        return words[0].charAt(0).toUpperCase();
                       } else {
-                        // If single word, take first two characters
-                        const singleWord = words[0];
-                        return singleWord.length >= 2
-                          ? singleWord.charAt(0).toUpperCase() +
-                              singleWord.charAt(1).toUpperCase()
-                          : singleWord.charAt(0).toUpperCase();
+                        return "X";
                       }
                     })()
-                  : "U"}
+                  : "X"}
               </div>
             </div>
             <div className="user-details"></div>

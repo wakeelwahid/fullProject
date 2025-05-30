@@ -68,6 +68,11 @@ class MobileTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'mobile'
 
 
+# ✅ User Profile Serializer
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'mobile', 'email', 'referral_code']
 
 
 # ✅ Admin login serializer (login via username instead of mobile, only staff allowed)

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ct%(g*h0_p1-rt2h+g4oc4y!$tipv_&8!^nht7t1rh07_25r3)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', 'ec6f988c-d038-4682-ac07-7a507891b5b1-00-rc6in6agvjnm.sisko.replit.dev']
+
 
 # CORS settings  
 CORS_ALLOWED_ORIGINS = [
@@ -100,24 +100,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 import os
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME', 'replit'),
-        'USER': os.environ.get('DATABASE_USER', 'replit'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', ''),
-        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
-        'PORT': os.environ.get('DATABASE_PORT', '5432'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "st_db",
+        "USER": "postgres",
+        "PASSWORD": "Wakeel@321",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
     }
 }
 
-# Fallback to SQLite if PostgreSQL env vars are not set
-if not os.environ.get('DATABASE_URL'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+
 
 AUTH_USER_MODEL = 'stapp.User'
 REST_FRAMEWORK = {

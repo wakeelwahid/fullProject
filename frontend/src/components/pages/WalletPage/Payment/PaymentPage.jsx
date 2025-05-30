@@ -1,56 +1,63 @@
-import React, { useState } from 'react';
-import './PaymentPage.css';
-import infoIcon from '../../../../assets/paytm-icon.png';
-import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState } from "react";
+import "./PaymentPage.css";
+import infoIcon from "../../../../assets/paytm-icon.png";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { amount, paymentMethod } = location.state || {};
 
-  const [utr, setUtr] = useState('');
-  const [error, setError] = useState('');
+  const [utr, setUtr] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleConfirmPayment = async () => {
     if (!/^[0-9]{12}$/.test(utr)) {
-      setError('⚠️ Please enter a valid 12-digit UTR number.');
+      setError("⚠️ Please enter a valid 12-digit UTR number.");
       return;
     }
 
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       const token = localStorage.getItem("token");
 
-      await axios.post(
-        "http://127.0.0.1:8000/api/deposit-requests/",
+      const response = await axios.post(
+        "/api/deposit-requests/", // Make sure this matches your Django URL
         {
           amount: amount,
-          payment_method: paymentMethod,
           utr_number: utr,
+          payment_method: paymentMethod,
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
-
-      setLoading(false);
 
       // Navigate on success
       navigate("/addchipssuccess", {
         state: {
           amount: amount,
-          transactionId: "TXN" + Date.now(),  // you can replace with backend txn id if you return one
+          transactionId: response.data.request_id,
         },
       });
     } catch (error) {
       console.error("Deposit request failed:", error);
-      setError("Failed to submit deposit request. Please try again.");
+
+      // Show detailed error if available
+      const errorMsg =
+        error.response?.data?.error ||
+        error.response?.data?.details ||
+        "Failed to submit deposit request. Please try again.";
+
+      setError(errorMsg);
+    } finally {
       setLoading(false);
     }
   };
@@ -94,7 +101,7 @@ const PaymentPage = () => {
               value={utr}
               onChange={(e) => {
                 setUtr(e.target.value);
-                setError('');
+                setError("");
               }}
               pattern="[0-9]{12}"
               maxLength="12"
@@ -109,7 +116,7 @@ const PaymentPage = () => {
             onClick={handleConfirmPayment}
             disabled={loading}
           >
-            {loading ? 'Submitting...' : 'CONFIRM PAYMENT'}
+            {loading ? "Submitting..." : "CONFIRM PAYMENT"}
           </button>
         </div>
 
@@ -134,7 +141,8 @@ const PaymentPage = () => {
           <li>Admin will verify & add chips to wallet</li>
         </ol>
         <div className="important-note">
-          <strong>Note:</strong> Fake UTR numbers will result in account suspension.
+          <strong>Note:</strong> Fake UTR numbers will result in account
+          suspension.
         </div>
       </div>
     </div>
