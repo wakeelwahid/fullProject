@@ -20,13 +20,12 @@ const Transactions = () => {
           id: index + 1,
           date: new Date(tx.date).toLocaleDateString(),
           time: new Date(tx.date).toLocaleTimeString(),
-          type: tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
+          type: tx.type,
           amount:
             (tx.type === "deposit" || tx.type === "win" || tx.type === "bonus"
               ? "+"
               : "-") + `₹${tx.amount}`,
-          status: tx.status.charAt(0).toUpperCase() + tx.status.slice(1),
-          note: tx.note || ''
+          status: tx.status || "completed",
         }));
 
         setTransactions(formatted);
@@ -61,7 +60,6 @@ const Transactions = () => {
                   <th>Type</th>
                   <th>Amount</th>
                   <th>Status</th>
-                  <th>Note</th>
                 </tr>
               </thead>
               <tbody>
@@ -70,20 +68,9 @@ const Transactions = () => {
                     <td>
                       {transaction.date} / <span>{transaction.time}</span>
                     </td>
-                    <td>
-                      <span className={`transaction-type ${transaction.type.toLowerCase()}`}>
-                        {transaction.type}
-                      </span>
-                    </td>
-                    <td className={transaction.type.toLowerCase() === 'deposit' ? 'amount-positive' : 'amount-negative'}>
-                      {transaction.amount}
-                    </td>
-                    <td>
-                      <span className={`status-badge ${transaction.status.toLowerCase()}`}>
-                        {transaction.status}
-                      </span>
-                    </td>
-                    <td className="note-cell">{transaction.note}</td>
+                    <td>{transaction.type}</td>
+                    <td>{transaction.amount}</td>
+                    <td>{transaction.status}</td>
                   </tr>
                 ))}
               </tbody>

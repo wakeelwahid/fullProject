@@ -360,15 +360,6 @@ def withdraw_request(request):
             user=request.user,
             amount=amount
         )
-        
-        # Create immediate transaction record for user history
-        Transaction.objects.create(
-            user=request.user,
-            transaction_type='withdraw',
-            amount=amount,
-            status='pending',
-            note='Withdrawal request submitted'
-        )
 
         return Response({'message': 'Withdraw request submitted successfully'})
     except Exception as e:
@@ -378,49 +369,17 @@ def withdraw_request(request):
 @permission_classes([IsAuthenticated])
 def transaction_history(request):
     try:
-        transactions = []
-        
-        # Get all Transaction records
-        transaction_records = Transaction.objects.filter(user=request.user).order_by('-created_at')
-        for txn in transaction_records:
-            transactions.append({
+        transactions = Transaction.objects.filter(user=request.user).order_by('-created_at')
+        data = []
+        for txn in transactions:
+            data.append({
                 'id': txn.id,
                 'type': txn.transaction_type,
                 'amount': str(txn.amount),
                 'status': txn.status,
-                'date': txn.created_at.isoformat(),
-                'note': txn.note or ''
+                'created_at': txn.created_at
             })
-        
-        # Get all DepositRequest records
-        deposit_requests = DepositRequest.objects.filter(user=request.user).order_by('-created_at')
-        for deposit in deposit_requests:
-            transactions.append({
-                'id': f'dep_{deposit.id}',
-                'type': 'deposit',
-                'amount': str(deposit.amount),
-                'status': deposit.status,
-                'date': deposit.created_at.isoformat(),
-                'note': f'UTR: {deposit.utr_number}'
-            })
-        
-        # Get all WithdrawRequest records
-        withdraw_requests = WithdrawRequest.objects.filter(user=request.user).order_by('-created_at')
-        for withdraw in withdraw_requests:
-            status = 'approved' if withdraw.is_approved else 'rejected' if withdraw.is_rejected else 'pending'
-            transactions.append({
-                'id': f'with_{withdraw.id}',
-                'type': 'withdraw',
-                'amount': str(withdraw.amount),
-                'status': status,
-                'date': withdraw.created_at.isoformat(),
-                'note': 'Withdrawal request'
-            })
-        
-        # Sort all transactions by date in descending order
-        transactions.sort(key=lambda x: x['date'], reverse=True)
-        
-        return Response(transactions)
+        return Response(data)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -648,16 +607,6 @@ def user_deposit_request(request):
         serializer = DepositRequestSerializer(data=request.data)
         if serializer.is_valid():
             deposit_request = serializer.save(user=request.user)
-            
-            # Create immediate transaction record for user history
-            Transaction.objects.create(
-                user=request.user,
-                transaction_type='deposit',
-                amount=deposit_request.amount,
-                status='pending',
-                note=f'Deposit request - UTR: {deposit_request.utr_number}'
-            )
-            
             return Response({
                 'message': 'Deposit request submitted successfully',
                 'request_id': deposit_request.id
