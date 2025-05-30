@@ -79,13 +79,8 @@ const Header = () => {
   };
 
   const handleProtectedRoute = (path, e) => {
-    const publicRoutes = ['/', '/terms', '/refund', '/privacy', '/game-rules'];
-    
-    if (!publicRoutes.includes(path) && !isAuthenticated()) {
-      e.preventDefault();
-      alert('Please login or register to access this feature.');
-      return;
-    }
+    // Let AuthGuard handle the authentication check
+    // No need to prevent default or show alert
   };
 
   const sidebarItems = [
